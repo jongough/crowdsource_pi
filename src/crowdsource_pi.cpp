@@ -178,16 +178,15 @@ int crowdsource_pi::Init(void)
     m_parent_window = GetOCPNCanvasWindow();
     m_pTPConfig = GetOCPNConfigObject();
 
-
     return (
         WANTS_CURSOR_LATLON       |
-        WANTS_TOOLBAR_CALLBACK    |
-        INSTALLS_TOOLBAR_TOOL     |
+//        WANTS_TOOLBAR_CALLBACK    |
+//        INSTALLS_TOOLBAR_TOOL     |
 //        WANTS_CONFIG              |
         INSTALLS_TOOLBOX_PAGE     |
         INSTALLS_CONTEXTMENU_ITEMS  |
-//        WANTS_NMEA_EVENTS         |
-//        WANTS_NMEA_SENTENCES        |
+        WANTS_NMEA_EVENTS         |
+        WANTS_NMEA_SENTENCES        |
         //    USES_AUI_MANAGER            |
 //        WANTS_PREFERENCES         |
         //    WANTS_ONPAINT_VIEWPORT      |
@@ -258,4 +257,23 @@ wxString crowdsource_pi::GetLongDescription()
 wxBitmap *crowdsource_pi::GetPlugInBitmap()
 {
     return m_pdeficon;
+}
+
+void crowdsource_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
+{
+    latitude = pfix.Lat;
+    longitude = pfix.Lon;
+    sog = pfix.Sog; // Speed over ground
+    cog = pfix.Cog; // Course over ground
+}
+
+void crowdsource_pi::SetNMEASentence(wxString &sentence)
+{
+    std::cout << "Crowdsource: Received NMEA" << sentence <<
+     " at lat=" << latitude << " lon=" << longitude <<
+     " course=" << cog <<
+     std::endl;
+    if (sentence.StartsWith("$RATTL")) {
+    } else if (sentence.StartsWith("$RATTM")) {
+    }
 }

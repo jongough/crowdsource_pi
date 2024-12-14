@@ -159,22 +159,32 @@ public:
  
     //    The required PlugIn Methods
     int Init(void);
-    void LateInit(void);
     bool DeInit(void);
-
-    int GetPlugInVersionMajor();
-    int GetPlugInVersionMinor();
-    int GetPlugInVersionPatch();
-    int GetPlugInVersionPost();
 
     int GetAPIVersionMajor();
     int GetAPIVersionMinor();
+    int GetPlugInVersionMajor();
+    int GetPlugInVersionMinor();
+    wxBitmap *GetPlugInBitmap();
+
     wxString GetCommonName();
     wxString GetShortDescription();
     wxString GetLongDescription();
-    wxBitmap *GetPlugInBitmap();
-    
+ 
+    void SetNMEASentence(wxString &sentence);
+
+    void SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix); // 18
+
+    void LateInit(void); // 110
+ 
+    int GetPlugInVersionPatch(); // 117
+    int GetPlugInVersionPost(); // 117  
+
 private:
+    double latitude;
+    double longitude;
+    double cog;
+    double sog;
 };
 
 #endif
