@@ -26,6 +26,7 @@
 
 
 #include "wx/wxprec.h"
+#include <regex>
 
 #ifndef  WX_PRECOMP
   #include "wx/wx.h"
@@ -267,6 +268,8 @@ void crowdsource_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
     cog = pfix.Cog; // Course over ground
 }
 
+static std::regex nmeaRattmRegex(R"(\$RATTM,(\d{2}),([\d\.\-]+),([\d\.\-]+),([^,]*),([\d\.\-]+),([\d\.\-]+),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),(..*)\*([A-Fa-f0-9]{2})\s*)");
+
 void crowdsource_pi::SetNMEASentence(wxString &sentence)
 {
     std::cout << "Crowdsource: Received NMEA" << sentence <<
@@ -275,5 +278,41 @@ void crowdsource_pi::SetNMEASentence(wxString &sentence)
      std::endl;
     if (sentence.StartsWith("$RATTL")) {
     } else if (sentence.StartsWith("$RATTM")) {
+      std::smatch match;
+      std::string sentence_str = sentence.ToStdString();
+      if (!std::regex_match(sentence_str, match, nmeaRattmRegex)) {
+        std::cerr << "Failed to parse RATTM NMEA sentence: [" << sentence << "]\n";
+        return;
+      }
+      if (match.size() != 15) {
+        std::cerr << "Only parsed " << (match.size() - 1) << " fields of RATTM NMEA sentence: [" << sentence << "]\n";
+        return;
+      }
+
+      int target_id = std::stoi(match[1]);
+      double target_distance = std::stod(match[2]);
+      double target_bearing = std::stod(match[3]);
+      std::string target_bearing_unit = match[4];
+      double target_speed = std::stod(match[5]);
+      double target_course = std::stod(match[6]);
+      std::string target_course_unit = match[7];
+      // target_distance_closes_point_of_approac = std::stod(match[8]);
+      // target_time_closes_point_of_approac = std::stod(match[9]);
+      std::string target_distance_unit = match[10];
+      std::string target_name = match[11];
+      std::string target_status = match[12];
+
+      
+      std::cout << "Target ID: " << target_id << std::endl;
+      std::cout << "Target Distance: " << target_distance << std::endl;
+      std::cout << "Target Distance Unit: " << target_distance_unit << std::endl;
+      std::cout << "Bearing from Own Ship: " << target_bearing << std::endl;
+      std::cout << "Bearing Unit: " << target_bearing_unit << std::endl;
+      std::cout << "Target Speed: " << target_speed << std::endl;
+      std::cout << "Target Course: " << target_course << std::endl;
+      std::cout << "Course unit: " << target_course_unit << std::endl;
+      std::cout << "Target Name: " << target_name << std::endl;
+      std::cout << "Target Status: " << target_status << std::endl;
+    
     }
 }
