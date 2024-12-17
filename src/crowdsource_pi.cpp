@@ -56,7 +56,6 @@
 
 #include "wx/jsonwriter.h"
 
-
 #ifndef DECL_EXP
 #ifdef __WXMSW__
 #define DECL_EXP     __declspec(dllexport)
@@ -98,7 +97,20 @@ crowdsource_pi::crowdsource_pi(void *ppimgr)
 
     l_pDir = new wxString(*GetpPrivateApplicationDataLocation());
     // {l_pDir}/plugins/crowdsource_pi/data is the datadir for this plugin
+/*
+    avro_schema_t person_schema;
+    const char  PERSON_SCHEMA[] =
+    "{\"type\":\"record\",\
+      \"name\":\"Person\",\
+      \"fields\":[\
+         {\"name\": \"ID\", \"type\": \"long\"},\
+         {\"name\": \"First\", \"type\": \"string\"},\
+         {\"name\": \"Last\", \"type\": \"string\"},\
+         {\"name\": \"Phone\", \"type\": \"string\"},\
+         {\"name\": \"Age\", \"type\": \"int\"}]}";
 
+    avro_schema_from_json_literal(PERSON_SCHEMA, &person_schema);
+*/    
     wxMemoryInputStream sm(
         "\211PNG\r\n\032\n\000\000\000\rIHDR\000\000\000 \000\000\000 "
         "\b\006\000\000\000szz\364\000\000\000\004sBIT\b\b\b\b|"
@@ -172,6 +184,34 @@ crowdsource_pi::~crowdsource_pi()
 
 int crowdsource_pi::Init(void)
 {
+    if (sqlite3_open(dbName, &db) != SQLITE_OK) {
+       std::cerr << "Cannot open database: " << dbName << ": " << sqlite3_errmsg(db) << std::endl;
+        return 0;
+    }
+
+    const char* createTableSQL = R"(
+        CREATE TABLE IF NOT EXISTS Targets (
+            ID INTEGER PRIMARY KEY AUTOINCREMENT,
+            target_id integer,
+            target_distance float,
+            target_bearing float,
+            target_bearing_unit text,
+            target_speed float,
+            target_course float,
+            target_course_unit text,
+            target_distance_unit text,
+            target_name text,
+            target_status text
+        );
+    )";
+
+    char* errorMessage = nullptr;
+    if (sqlite3_exec(db, createTableSQL, nullptr, nullptr, &errorMessage) != SQLITE_OK) {
+        std::cerr << "SQL error: " << errorMessage << std::endl;
+        sqlite3_free(errorMessage);
+        return 0;
+    }    
+
     // Adds local language support for the plugin to OCPN
     AddLocaleCatalog( PLUGIN_CATALOG_NAME );
 
@@ -313,6 +353,46 @@ void crowdsource_pi::SetNMEASentence(wxString &sentence)
       std::cout << "Course unit: " << target_course_unit << std::endl;
       std::cout << "Target Name: " << target_name << std::endl;
       std::cout << "Target Status: " << target_status << std::endl;
-    
+
+
+      const char* insertSQL = R"(
+        INSERT INTO Targets (
+            target_id,
+            target_distance,
+            target_bearing,
+            target_bearing_unit,
+            target_speed,
+            target_course,
+            target_course_unit,
+            target_distance_unit,
+            target_name,
+            target_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+      )";
+      sqlite3_stmt* stmt = nullptr;
+
+      if (sqlite3_prepare_v2(db, insertSQL, -1, &stmt, nullptr) != SQLITE_OK) {
+          std::cerr << "Failed to prepare statement: " << sqlite3_errmsg(db) << std::endl;
+          return;
+      }
+
+      sqlite3_bind_int   (stmt,  1, target_id);
+      sqlite3_bind_double(stmt,  2, target_distance);
+      sqlite3_bind_double(stmt,  3, target_bearing);
+      sqlite3_bind_text  (stmt,  4, target_bearing_unit.c_str(), -1, SQLITE_TRANSIENT);
+      sqlite3_bind_double(stmt,  5, target_speed);
+      sqlite3_bind_double(stmt,  6, target_course);
+      sqlite3_bind_text  (stmt,  7, target_course_unit.c_str(), -1, SQLITE_TRANSIENT);
+      sqlite3_bind_text  (stmt,  8, target_distance_unit.c_str(), -1, SQLITE_TRANSIENT);
+      sqlite3_bind_text  (stmt,  9, target_name.c_str(), -1, SQLITE_TRANSIENT);
+      sqlite3_bind_text  (stmt, 10, target_status.c_str(), -1, SQLITE_TRANSIENT);
+        
+      if (sqlite3_step(stmt) != SQLITE_DONE) {
+          std::cerr << "Failed to execute statement: " << sqlite3_errmsg(db) << std::endl;
+          sqlite3_finalize(stmt);
+          return;
+      }
+
+      sqlite3_finalize(stmt);
     }
 }
+

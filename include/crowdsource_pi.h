@@ -139,6 +139,9 @@ std::cout << x  << std::endl ; } while (0)
 #include <wx/dynarray.h>
 
 #include "ODAPI.h"
+//#include <avro.h>
+#include <iostream>
+#include <sqlite3.h>
 
 //----------------------------------------------------------------------------------------------------------
 //    The PlugIn Class Definition
@@ -185,6 +188,10 @@ private:
     double longitude;
     double cog;
     double sog;
+
+    const char* dbName = "crowdsource.sqlite";
+
+    sqlite3* db = nullptr;
 };
 
 #endif
