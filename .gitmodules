@@ -2,3 +2,15 @@
 	path = opencpn-libs
 	url = https://github.com/OpenCPN/opencpn-libs.git
 	branch = main
+[submodule "libs/avro"]
+	path = libs/avro
+	url = git@github.com:apache/avro.git
+[submodule "libs/zlib"]
+	path = libs/zlib
+	url = git@github.com:madler/zlib.git
+[submodule "libs/jansson"]
+	path = libs/jansson
+	url = git@github.com:akheron/jansson.git
+[submodule "libs/liblzma"]
+	path = libs/liblzma
+	url = git@github.com:kobolabs/liblzma.git

@@ -29,8 +29,6 @@
 #
 # -- Modify section below to include all the details for your plugin.    -- ##
 
-set(CMLOC "CMakeLists: ")
-
 # define minimum cmake version
 cmake_minimum_required(VERSION 3.5.1)
 if(COMMAND cmake_policy)
@@ -45,6 +43,8 @@ if(COMMAND cmake_policy)
     cmake_policy(SET CMP0077 NEW)
   endif (POLICY CMP0077)
 endif (COMMAND cmake_policy)
+
+include(ExternalProject)
 
 # set for vscode/vscodium
 set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
@@ -64,7 +64,7 @@ set(LONG_DESCRIPTION
 
 set(VERSION_MAJOR "0")
 set(VERSION_MINOR "1")
-set(VERSION_PATCH "42")
+set(VERSION_PATCH "47")
 set(VERSION_TWEAK "0")
 set(VERSION_DATE "11/12/2024") # DD/MM/YYYY format
 set(OCPN_MIN_VERSION "ov58")
@@ -176,6 +176,72 @@ add_definitions(-DPLUGIN_USE_SVG)
 
 # ----- Section above - Add your project SET(SRCS and SET(HDRS  etc.
 
+# function(add_avro_subdirectory)
+#     set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build Avro as a static library" FORCE)
+#     set(CMAKE_EXE_LINKER_FLAGS "-static" CACHE STRING "Enable static linking" FORCE)
+#     set(ZLIB_LIBRARY "/nonexistent" CACHE STRING "Dummy path for ZLIB library" FORCE)
+#     set(ZLIB_INCLUDE_DIR "/nonexistent" CACHE STRING "Dummy path for ZLIB include directory" FORCE)
+#     set(ZLIB_FOUND FALSE CACHE BOOL "Disable ZLIB" FORCE)
+#     add_subdirectory(libs/avro/lang/c ${CMAKE_BINARY_DIR}/avro)
+# endfunction()
+
+# add_avro_subdirectory()
+
+ExternalProject_Add(zlib
+    PREFIX ${CMAKE_BINARY_DIR}/zlib
+    SOURCE_DIR ${CMAKE_SOURCE_DIR}/libs/zlib
+    CMAKE_ARGS
+        -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+        -DCMAKE_CXX_FLAGS="-fPIC"
+        -DCMAKE_C_FLAGS="-fPIC"
+        -DBUILD_SHARED_LIBS=OFF
+    INSTALL_COMMAND /bin/bash -c "cp ${CMAKE_BINARY_DIR}/zlib/src/zlib-build/libz.a ${CMAKE_BINARY_DIR}"
+    BUILD_ALWAYS TRUE
+)
+ExternalProject_Add(jansson
+    PREFIX ${CMAKE_BINARY_DIR}/jansson
+    SOURCE_DIR ${CMAKE_SOURCE_DIR}/libs/jansson
+    CMAKE_ARGS
+        -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+        -DCMAKE_CXX_FLAGS="-fPIC"
+        -DCMAKE_C_FLAGS="-fPIC"
+        -DBUILD_SHARED_LIBS=OFF
+    INSTALL_COMMAND /bin/bash -c "cp ${CMAKE_BINARY_DIR}/jansson/src/jansson-build/lib/libjansson.a ${CMAKE_BINARY_DIR}"
+    BUILD_ALWAYS TRUE
+)
+ExternalProject_Add(liblzma
+    PREFIX ${CMAKE_BINARY_DIR}/liblzma
+    SOURCE_DIR ${CMAKE_SOURCE_DIR}/libs/liblzma
+    CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR}/liblzma
+    BUILD_COMMAND make -j
+    INSTALL_COMMAND /bin/bash -c "make install; cp ${CMAKE_BINARY_DIR}/liblzma/lib/liblzma.a ${CMAKE_BINARY_DIR}"
+    BUILD_IN_SOURCE 1
+    BUILD_ALWAYS TRUE
+)
+ExternalProject_Add(avro
+    SOURCE_DIR ${CMAKE_SOURCE_DIR}/libs/avro/lang/c
+    CMAKE_ARGS
+        -DCMAKE_LIBRARY_PATH=${CMAKE_BINARY_DIR}
+        -DCMAKE_EXE_LINKER_FLAGS="-static"
+        -DBUILD_SHARED_LIBS=OFF
+    BUILD_COMMAND make VERBOSE=1
+    INSTALL_COMMAND ""
+    BUILD_ALWAYS TRUE
+)
+ExternalProject_Get_Property(avro BINARY_DIR)
+set(AVRO_LIB "${BINARY_DIR}/src/libavro.a")
+include_directories("${CMAKE_SOURCE_DIR}/libs/avro/lang/c/src")
+target_link_libraries(${PACKAGE_NAME} "${AVRO_LIB}")
+add_dependencies(${PACKAGE_NAME} avro)
+add_dependencies(avro zlib)
+add_dependencies(avro jansson)
+add_dependencies(avro liblzma)
+
+message(
+   STATUS
+     "LIBRARIES: zlib:${ZLIB_LIBRARY} jansson:${JANSSON_LIBRARY} libllzma:${LIBLZMA_LIBRARY}"
+ )
+  
 # ----- If using JSON validation in plugin section below is needed
 
 if (APPLE)
