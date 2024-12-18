@@ -64,7 +64,7 @@ set(LONG_DESCRIPTION
 
 set(VERSION_MAJOR "0")
 set(VERSION_MINOR "1")
-set(VERSION_PATCH "47")
+set(VERSION_PATCH "55")
 set(VERSION_TWEAK "0")
 set(VERSION_DATE "11/12/2024") # DD/MM/YYYY format
 set(OCPN_MIN_VERSION "ov58")
@@ -176,16 +176,6 @@ add_definitions(-DPLUGIN_USE_SVG)
 
 # ----- Section above - Add your project SET(SRCS and SET(HDRS  etc.
 
-# function(add_avro_subdirectory)
-#     set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build Avro as a static library" FORCE)
-#     set(CMAKE_EXE_LINKER_FLAGS "-static" CACHE STRING "Enable static linking" FORCE)
-#     set(ZLIB_LIBRARY "/nonexistent" CACHE STRING "Dummy path for ZLIB library" FORCE)
-#     set(ZLIB_INCLUDE_DIR "/nonexistent" CACHE STRING "Dummy path for ZLIB include directory" FORCE)
-#     set(ZLIB_FOUND FALSE CACHE BOOL "Disable ZLIB" FORCE)
-#     add_subdirectory(libs/avro/lang/c ${CMAKE_BINARY_DIR}/avro)
-# endfunction()
-
-# add_avro_subdirectory()
 
 ExternalProject_Add(zlib
     PREFIX ${CMAKE_BINARY_DIR}/zlib
@@ -219,19 +209,23 @@ ExternalProject_Add(liblzma
     BUILD_ALWAYS TRUE
 )
 ExternalProject_Add(avro
+    PREFIX ${CMAKE_BINARY_DIR}/avro
     SOURCE_DIR ${CMAKE_SOURCE_DIR}/libs/avro/lang/c
     CMAKE_ARGS
         -DCMAKE_LIBRARY_PATH=${CMAKE_BINARY_DIR}
+        -DJANSSON_LIBRARY_DIRS=${CMAKE_BINARY_DIR}
+        -DJANSSON_LIBRARIES=${CMAKE_BINARY_DIR}/libjansson.a
         -DCMAKE_EXE_LINKER_FLAGS="-static"
         -DBUILD_SHARED_LIBS=OFF
     BUILD_COMMAND make VERBOSE=1
-    INSTALL_COMMAND ""
+    INSTALL_COMMAND /bin/bash -c "cp ${CMAKE_BINARY_DIR}/avro/src/avro-build/src/libavro.a ${CMAKE_BINARY_DIR}"
     BUILD_ALWAYS TRUE
 )
-ExternalProject_Get_Property(avro BINARY_DIR)
-set(AVRO_LIB "${BINARY_DIR}/src/libavro.a")
 include_directories("${CMAKE_SOURCE_DIR}/libs/avro/lang/c/src")
-target_link_libraries(${PACKAGE_NAME} "${AVRO_LIB}")
+target_link_libraries(${PACKAGE_NAME} "${CMAKE_BINARY_DIR}/libavro.a")
+# Include dependencies of libarvro directly, or the linker will be to stupid to not leave dangling symbols pointing to them
+target_link_libraries(${PACKAGE_NAME} "${CMAKE_BINARY_DIR}/libjansson.a")
+target_link_libraries(${PACKAGE_NAME} "${CMAKE_BINARY_DIR}/libz.a")
 add_dependencies(${PACKAGE_NAME} avro)
 add_dependencies(avro zlib)
 add_dependencies(avro jansson)
