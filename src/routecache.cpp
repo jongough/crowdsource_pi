@@ -66,17 +66,17 @@ void Routecache::Insert(
             target_name,
             target_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
       )")
-     .bind(0, target_id)
-     .bind(1, target_distance)
-     .bind(2, target_bearing)
-     .bind(3, target_bearing_unit)
-     .bind(4, target_speed)
-     .bind(5, target_course)
-     .bind(6, target_course_unit)
-     .bind(7, target_distance_unit)
-     .bind(8, target_name)
-     .bind(9, target_status)
-     .next();
+     .bind(1, target_id)
+     .bind(2, target_distance)
+     .bind(3, target_bearing)
+     .bind(4, target_bearing_unit)
+     .bind(5, target_speed)
+     .bind(6, target_course)
+     .bind(7, target_course_unit)
+     .bind(8, target_distance_unit)
+     .bind(9, target_name)
+     .bind(10, target_status)
+     .step();
 }
 
 void Routecache::OpenDB() {
