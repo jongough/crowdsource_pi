@@ -1,2 +1,6 @@
 src/crowdsource_pi.cpp
+src/routecache.cpp
+src/sqlutils.cpp
 include/crowdsource_pi.h
+include/routecache.h
+include/sqlutils.h
