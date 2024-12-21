@@ -143,6 +143,7 @@ std::cout << x  << std::endl ; } while (0)
 #include <iostream>
 #include <sqlite3.h>
 #include "routecache.h"
+#include "connector.h"
 
 //----------------------------------------------------------------------------------------------------------
 //    The PlugIn Class Definition
@@ -191,6 +192,7 @@ private:
     double sog;
 
     Routecache *cache;
+    Connector *connector;
 };
 
 #endif

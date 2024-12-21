@@ -64,7 +64,7 @@ set(LONG_DESCRIPTION
 
 set(VERSION_MAJOR "0")
 set(VERSION_MINOR "1")
-set(VERSION_PATCH "78")
+set(VERSION_PATCH "85")
 set(VERSION_TWEAK "0")
 set(VERSION_DATE "11/12/2024") # DD/MM/YYYY format
 set(OCPN_MIN_VERSION "ov58")
@@ -167,13 +167,17 @@ add_definitions(-DUSE_S57)
 set(SRCS
     src/crowdsource_pi.cpp
     src/routecache.cpp
+    src/connector.cpp
     src/sqlutils.cpp
+    src/socketutils.cpp
 )
 
 set(HDRS
     include/crowdsource_pi.h
     include/routecache.h
+    include/connector.h
     include/sqlutils.h
+    include/socketutils.h
 )
 
 add_definitions(-DPLUGIN_USE_SVG)

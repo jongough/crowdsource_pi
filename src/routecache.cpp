@@ -8,6 +8,8 @@
 #include <wx/string.h>
 #include <wx/filename.h>
 #include <wx/utils.h>
+#include <thread>
+#include <mutex>
 
 bool DoesTableExist(sqlite3* db, const std::string& tableName) {
     Query query = Query(db, "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='" + tableName + "';");
@@ -53,6 +55,8 @@ void Routecache::Insert(
     std::string target_distance_unit,
     std::string target_name,
     std::string target_status) {
+ 
+    std::lock_guard<std::mutex> guard(lock);
     Query(db, R"(
         INSERT INTO Targets (
             target_id,
@@ -80,6 +84,7 @@ void Routecache::Insert(
 }
 
 void Routecache::OpenDB() {
+    std::lock_guard<std::mutex> guard(lock);
     int res = sqlite3_open(db_name.c_str(), &db);
     if (res == SQLITE_OK) return;
     db = NULL;
@@ -87,12 +92,14 @@ void Routecache::OpenDB() {
 }
 
 void Routecache::CloseDB() {
+    std::lock_guard<std::mutex> guard(lock);
     if (db == NULL) return;
     sqlite3_close(db);
     db = NULL;
 }
 
 void Routecache::CreateEmpty() {
+    std::lock_guard<std::mutex> guard(lock);
     if (DoesTableExist(db, "migrations")) return;
     Query(db, R"(
         CREATE TABLE IF NOT EXISTS migrations (
@@ -104,9 +111,13 @@ void Routecache::CreateEmpty() {
 }
 
 void Routecache::Migrate() {
-    Query query = Query(db, "SELECT max(id) FROM migrations;");
-    query.step();
-    int max_id = query.get_int(0);
+    int max_id;
+    {
+        std::lock_guard<std::mutex> guard(lock);
+        Query query = Query(db, "SELECT max(id) FROM migrations;");
+        query.step();
+        max_id = query.get_int(0);
+    }
 
     wxString path(migrations_dir);
     wxDir dir(path);
@@ -134,6 +145,7 @@ void Routecache::Migrate() {
 }
 
 void Routecache::RunMigration(int i, wxString name) {
+    std::lock_guard<std::mutex> guard(lock);
     std::cerr << "Running migration " << i << ": " << name.ToStdString() << "\n";
 
     wxFile file(name);

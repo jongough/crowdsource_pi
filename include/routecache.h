@@ -4,6 +4,7 @@
 #include <string>
 #include <wx/string.h>
 #include <sqlite3.h>
+#include <mutex>
 
 class Routecache {
 public:
@@ -11,6 +12,7 @@ public:
     ~Routecache();
 
     sqlite3* db = nullptr;
+    std::mutex lock;
 
     void Insert(
         int target_id,

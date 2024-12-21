@@ -98,6 +98,7 @@ crowdsource_pi::crowdsource_pi(void *ppimgr)
     l_pDir = new wxString(*GetpPrivateApplicationDataLocation());
 
     cache = nullptr;
+    connector = nullptr;
     
 //    m_shareLocn = GetPluginDataDir("radar_pi") + wxFileName::GetPathSeparator() + _T("data") + wxFileName::GetPathSeparator();
         
@@ -187,6 +188,7 @@ crowdsource_pi::crowdsource_pi(void *ppimgr)
 crowdsource_pi::~crowdsource_pi()
 {
     if (cache) delete cache;
+    if (connector) delete connector;
 }
 
 int crowdsource_pi::Init(void)
@@ -209,15 +211,9 @@ int crowdsource_pi::Init(void)
         std::cerr << e.what() << " Disabling plugin\n";
         return 0;
     }
-    
-    /*
-    cache = new Routecache(
-        (GetPluginDataDir("crowdsource_pi")
-         + wxFileName::GetPathSeparator() + _T("data")
-         + wxFileName::GetPathSeparator() + _T("migrations")).ToStdString(),
-        (GetpPrivateApplicationDataLocation()
-         + wxFileName::GetPathSeparator() + _T("routecache.sqlite3")).ToStdString());
-    */
+
+    connector = new Connector(cache);
+    connector->Run();
     
     return (
         WANTS_CURSOR_LATLON       |
