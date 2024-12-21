@@ -54,7 +54,11 @@ void Routecache::Insert(
     std::string target_course_unit,
     std::string target_distance_unit,
     std::string target_name,
-    std::string target_status) {
+    std::string target_status,
+    double latitude,
+    double longitude,
+    double target_latitude,
+    double target_longitude) {
  
     std::lock_guard<std::mutex> guard(lock);
     Query(db, R"(
@@ -68,7 +72,12 @@ void Routecache::Insert(
             target_course_unit,
             target_distance_unit,
             target_name,
-            target_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            target_status,
+            latitude,
+            longitude,
+            target_latitude,
+            target_longitude
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
       )")
      .bind(1, target_id)
      .bind(2, target_distance)
@@ -80,6 +89,10 @@ void Routecache::Insert(
      .bind(8, target_distance_unit)
      .bind(9, target_name)
      .bind(10, target_status)
+     .bind(11, latitude)
+     .bind(12, longitude)
+     .bind(13, target_latitude)
+     .bind(14, target_longitude)
      .step();
 }
 

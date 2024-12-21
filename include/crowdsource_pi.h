@@ -149,7 +149,15 @@ std::cout << x  << std::endl ; } while (0)
 //    The PlugIn Class Definition
 //----------------------------------------------------------------------------------------------------------
 
-//#define PI 3.14159265
+#ifndef PI
+#define PI (3.1415926535897931160E0)
+#endif
+#ifndef deg2rad
+#define deg2rad(x) ((x)*2 * PI / 360.0)
+#endif
+#ifndef rad2deg
+#define rad2deg(x) ((x)*360.0 / (2 * PI))
+#endif
 
 class crowdsource_pi : public opencpn_plugin_118
 {
@@ -185,6 +193,8 @@ public:
     int GetPlugInVersionPatch(); // 117
     int GetPlugInVersionPost(); // 117  
 
+    void Polar2Pos(double, double, double&, double&);
+ 
 private:
     double latitude;
     double longitude;

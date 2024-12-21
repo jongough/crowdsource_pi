@@ -24,7 +24,11 @@ public:
         std::string target_course_unit,
         std::string target_distance_unit,
         std::string target_name,
-        std::string target_status);
+        std::string target_status,
+        double latitude,
+        double longitude,
+        double target_latitude,
+        double target_longitude);
 
 private:
     std::string migrations_dir;
