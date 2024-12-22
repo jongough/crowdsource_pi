@@ -2,14 +2,18 @@
 #include <vector>
 #include <set>
 #include <fstream>
-#include "routecache.h"
-#include "sqlutils.h"
 #include <wx/dir.h>
 #include <wx/string.h>
 #include <wx/filename.h>
 #include <wx/utils.h>
 #include <thread>
 #include <mutex>
+#include <random>
+#include <sstream>
+#include <iomanip>
+#include <string>
+#include "routecache.h"
+#include "sqlutils.h"
 
 bool DoesTableExist(sqlite3* db, const std::string& tableName) {
     Query query = Query(db, "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='" + tableName + "';");
@@ -19,12 +23,35 @@ bool DoesTableExist(sqlite3* db, const std::string& tableName) {
     return query.get_int(0) > 0;
 }
 
+std::string generateUUID() {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<uint32_t> dist(0, 0xFFFFFFFF);
+
+    char uuid[37];
+    std::snprintf(
+        uuid, sizeof(uuid),
+        "%08x-%04x-%04x-%04x-%012x",
+        dist(gen),
+        dist(gen) & 0xFFFF,
+        (dist(gen) & 0x0FFF) | 0x4000,
+        (dist(gen) & 0x3FFF) | 0x8000,
+        dist(gen)
+    );
+    return std::string(uuid);
+}
+
 Routecache::Routecache(std::string migrations_dir, std::string db_name) {
     db = NULL;
 
     this->migrations_dir = migrations_dir;
     this->db_name = db_name;
 
+    for (int idx = 0; idx < 100; idx++) {
+        route_updates[idx] = wxDateTime::UNow();
+        route_updates[idx].Set(1, wxDateTime::Jan, 1970, 0, 0, 0, 0);
+    }
+    
     try {
         OpenDB();
         CreateEmpty();
@@ -59,10 +86,30 @@ void Routecache::Insert(
     double longitude,
     double target_latitude,
     double target_longitude) {
+
+    wxDateTime now = wxDateTime::Now();
  
+    if (now
+        .Subtract(
+                  route_updates[target_id])
+        .GetSeconds()
+        .GetValue() > 60) {
+        std::string uuid = generateUUID();
+        Query(db, R"(
+          insert into target (uuid) values (?);
+        )").bind(1, uuid).step();
+        Query query(db, R"(
+          select target_id from target where uuid = ?;
+        )");
+        query.bind(1, uuid);
+        query.step();
+        route_ids[target_id] = query.get_int(1);
+    }
+    route_updates[target_id] = now;
+    
     std::lock_guard<std::mutex> guard(lock);
     Query(db, R"(
-        INSERT INTO Targets (
+        insert into target_position (
             target_id,
             target_distance,
             target_bearing,
@@ -77,9 +124,10 @@ void Routecache::Insert(
             longitude,
             target_latitude,
             target_longitude
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        ) values (
+          ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
       )")
-     .bind(1, target_id)
+     .bind(1, route_ids[target_id])
      .bind(2, target_distance)
      .bind(3, target_bearing)
      .bind(4, target_bearing_unit)

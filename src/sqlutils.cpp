@@ -9,6 +9,7 @@ Query::Query(sqlite3* db, std::string query_string) {
 }
 Query::~Query() {
     sqlite3_finalize(stmt); // Can't throw in a destructor if != SQLITE_OK
+    stmt = nullptr;
 }
 
 bool Query::next(void) {
@@ -16,9 +17,10 @@ bool Query::next(void) {
     if (!remaining_query_string[0]) return false;
     const char *leftover;
     if (stmt != nullptr) sqlite3_finalize(stmt);
+    stmt = nullptr;
     int res = sqlite3_prepare_v2(db, remaining_query_string, -1, &stmt, &leftover);
-    if (stmt == nullptr) return false;
-    if (   (res != SQLITE_OK)
+    if (   (stmt != nullptr)
+        && (res != SQLITE_OK)
         && (res != SQLITE_ROW)
         && (res != SQLITE_DONE)) {
         throw QueryException(db, std::string(remaining_query_string));

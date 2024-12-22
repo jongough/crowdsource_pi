@@ -3,6 +3,7 @@
 
 #include <string>
 #include <wx/string.h>
+#include <wx/datetime.h>
 #include <sqlite3.h>
 #include <mutex>
 
@@ -14,6 +15,10 @@ public:
     sqlite3* db = nullptr;
     std::mutex lock;
 
+    // 100 = the number of targets supported by NMEA...
+    int route_ids[100]; // DB ids corresponding to NMEA targets
+    wxDateTime route_updates[100];
+ 
     void Insert(
         int target_id,
         double target_distance,

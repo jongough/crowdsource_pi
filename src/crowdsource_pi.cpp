@@ -364,21 +364,25 @@ void crowdsource_pi::SetNMEASentence(wxString &sentence)
         std::cout << "Target latitude: " << target_latitude << std::endl;
         std::cout << "Target longitude: " << target_longitude << std::endl;
 
-        cache->Insert(
-            target_id,
-            target_distance,
-            target_bearing,
-            target_bearing_unit,
-            target_speed,
-            target_course,
-            target_course_unit,
-            target_distance_unit,
-            target_name,
-            target_status,
-            latitude,
-            longitude,
-            target_latitude,
-            target_longitude);
+        try {
+            cache->Insert(
+                target_id,
+                target_distance,
+                target_bearing,
+                target_bearing_unit,
+                target_speed,
+                target_course,
+                target_course_unit,
+                target_distance_unit,
+                target_name,
+                target_status,
+                latitude,
+                longitude,
+                target_latitude,
+                target_longitude);
+        } catch (const std::exception& e) {
+            std::cerr << "Failed to insert target point in cache: " << e.what() << "\n";
+        }
     }
 }
 

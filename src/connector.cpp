@@ -2,17 +2,21 @@
 
 Connector::Connector(Routecache *routecache) :
   wxThread(wxTHREAD_DETACHED),
-  routecache(routecache) { }
+  routecache(routecache),
+  finalize(false) { }
 
 Connector::~Connector() {
-    delete socket;
+    finalize = true;
 }
 
 wxThread::ExitCode Connector::Entry() {
     socket = new Socket("127.0.0.1", 9900, 100, 60000);
-    while (true) {
+    while (!finalize) {
         socket->WaitAndSendInitial("Hello world", 0);
         wxThread::Sleep(10000);
     }
+    delete socket;
+    socket = nullptr;
+    
     return 0;
 };

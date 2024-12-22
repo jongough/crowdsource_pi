@@ -55,7 +55,10 @@ void Socket::EnsureConnection() {
 }
 
 void Socket::Send(const std::string& data, int flags) {
-    if (!sock || !sock->IsConnected()) {
+    if (!sock) {
+        ConnectionFailure(wxSOCKET_INVSOCK, "Socket disconnected when trying to send");
+    }
+    if (!sock->IsConnected()) {
         ConnectionFailure(sock->LastError(), "Socket disconnected when trying to send");
     }
 

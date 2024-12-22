@@ -10,7 +10,8 @@ class Connector : public wxThread {
 private:
     Routecache *routecache;
     Socket *socket;
- 
+    bool finalize;
+    
 public:
     Connector(Routecache *routecache);
     ~Connector();
