@@ -71,79 +71,6 @@ Routecache::~Routecache() {
     if (db != NULL) sqlite3_close(db);
 }
 
-void Routecache::Insert(
-    int target_id,
-    double target_distance,
-    double target_bearing,
-    std::string target_bearing_unit,
-    double target_speed,
-    double target_course,
-    std::string target_course_unit,
-    std::string target_distance_unit,
-    std::string target_name,
-    std::string target_status,
-    double latitude,
-    double longitude,
-    double target_latitude,
-    double target_longitude) {
-
-    wxDateTime now = wxDateTime::Now();
- 
-    if (now
-        .Subtract(
-                  route_updates[target_id])
-        .GetSeconds()
-        .GetValue() > 60) {
-        std::string uuid = generateUUID();
-        Query(db, R"(
-          insert into target (uuid) values (?);
-        )").bind(1, uuid).step();
-        Query query(db, R"(
-          select target_id from target where uuid = ?;
-        )");
-        query.bind(1, uuid);
-        query.step();
-        route_ids[target_id] = query.get_int(0);
-    }
-    route_updates[target_id] = now;
-    
-    std::lock_guard<std::mutex> guard(lock);
-    Query(db, R"(
-        insert into target_position (
-            target_id,
-            target_distance,
-            target_bearing,
-            target_bearing_unit,
-            target_speed,
-            target_course,
-            target_course_unit,
-            target_distance_unit,
-            target_name,
-            target_status,
-            latitude,
-            longitude,
-            target_latitude,
-            target_longitude
-        ) values (
-          ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-      )")
-     .bind(1, route_ids[target_id])
-     .bind(2, target_distance)
-     .bind(3, target_bearing)
-     .bind(4, target_bearing_unit)
-     .bind(5, target_speed)
-     .bind(6, target_course)
-     .bind(7, target_course_unit)
-     .bind(8, target_distance_unit)
-     .bind(9, target_name)
-     .bind(10, target_status)
-     .bind(11, latitude)
-     .bind(12, longitude)
-     .bind(13, target_latitude)
-     .bind(14, target_longitude)
-     .step();
-}
-
 void Routecache::OpenDB() {
     std::lock_guard<std::mutex> guard(lock);
     int res = sqlite3_open(db_name.c_str(), &db);
@@ -231,3 +158,152 @@ void Routecache::RunMigration(int i, wxString name) {
      .bind(2, strname)
      .step();
 }
+
+
+
+void Routecache::Insert(
+    int target_id,
+    double target_distance,
+    double target_bearing,
+    std::string target_bearing_unit,
+    double target_speed,
+    double target_course,
+    std::string target_course_unit,
+    std::string target_distance_unit,
+    std::string target_name,
+    std::string target_status,
+    double latitude,
+    double longitude,
+    double target_latitude,
+    double target_longitude) {
+    std::lock_guard<std::mutex> guard(lock);
+
+    wxDateTime now = wxDateTime::Now();
+ 
+    if (now
+        .Subtract(
+                  route_updates[target_id])
+        .GetSeconds()
+        .GetValue() > 60) {
+        std::string uuid = generateUUID();
+        Query(db, R"(
+          insert into target (uuid) values (?);
+        )").bind(1, uuid).step();
+        Query query(db, R"(
+          select target_id from target where uuid = ?;
+        )");
+        query.bind(1, uuid);
+        query.step();
+        route_ids[target_id] = query.get_int(0);
+    }
+    route_updates[target_id] = now;
+    
+    Query(db, R"(
+        insert into target_position (
+            target_id,
+            target_distance,
+            target_bearing,
+            target_bearing_unit,
+            target_speed,
+            target_course,
+            target_course_unit,
+            target_distance_unit,
+            target_name,
+            target_status,
+            latitude,
+            longitude,
+            target_latitude,
+            target_longitude
+        ) values (
+          ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+      )")
+     .bind(1, route_ids[target_id])
+     .bind(2, target_distance)
+     .bind(3, target_bearing)
+     .bind(4, target_bearing_unit)
+     .bind(5, target_speed)
+     .bind(6, target_course)
+     .bind(7, target_course_unit)
+     .bind(8, target_distance_unit)
+     .bind(9, target_name)
+     .bind(10, target_status)
+     .bind(11, latitude)
+     .bind(12, longitude)
+     .bind(13, target_latitude)
+     .bind(14, target_longitude)
+     .step();
+}
+
+
+void Routecache::Retrieve(avro_value_t *linestring, std::string& uuid, std::string& timestamp) {
+    std::lock_guard<std::mutex> guard(lock);
+
+    Query query(db, R"(
+      select
+        target.uuid,
+        target_position.timestamp,
+        strftime('%s', timestamp) +  strftime('%f', timestamp) - strftime('%S', timestamp)
+          as timestamp_epoch,
+        target_position.target_latitude,
+        target_position.target_longitude
+      from
+        target_position,
+        target
+      where
+        target_position.target_id = (
+          select
+            target_id
+          from
+            target_position
+          where
+            sent is false
+          order by
+            timestamp asc
+          limit 1)
+        and target.target_id = target_position.target_id
+        and not target_position.sent
+        order by timestamp asc
+        limit 10;
+      )");
+
+    while (query.step()) {
+         uuid = query.get_string(0);
+         timestamp = query.get_string(1);
+
+         avro_value_t position;
+         avro_value_t lat_value;
+         avro_value_t lon_value;
+         avro_value_t timestamp_value;
+         if (avro_value_append(linestring, &position, NULL) != 0)
+             throw std::runtime_error("Avro: Unable to append position to linestring");
+         if (avro_value_get_by_name(&position, "lat", &lat_value, NULL) != 0)
+             throw std::runtime_error("Avro: Unable to append latitude to linestring");
+         if (avro_value_get_by_name(&position, "lon", &lon_value, NULL) != 0)
+             throw std::runtime_error("Avro: Unable to append latitude to linestring");
+         if (avro_value_get_by_name(&position, "timestamp", &timestamp_value, NULL) != 0)
+             throw std::runtime_error("Avro: Unable to append latitude to linestring");
+         if (avro_value_set_float(&lat_value, (float) query.get_double(3)) != 0)
+             throw std::runtime_error("Avro: Unable to set position latitude");
+         if (avro_value_set_float(&lon_value, (float) query.get_double(4)) != 0)
+             throw std::runtime_error("Avro: Unable to set position longitude");
+         if (avro_value_set_float(&timestamp_value, (float) query.get_double(2)) != 0)
+             throw std::runtime_error("Avro: Unable to set position timestamp");         
+    }
+}
+
+void Routecache::MarkAsSent(std::string uuid, std::string timestamp) {
+    std::lock_guard<std::mutex> guard(lock);
+    Query(db, R"(
+      update
+        target_position
+      set
+        sent = true
+      where
+        target_id = (select target_id from target where uuid = ?)
+        and timestamp < ?;
+    )")
+     .bind(1, uuid)
+     .bind(2, timestamp)
+     .step();
+}
+

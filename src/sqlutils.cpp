@@ -142,6 +142,10 @@ const unsigned char *Query::get_text(int iCol) {
     return sqlite3_column_text(stmt, iCol);
 }
 
+const std::string Query::get_string(int iCol) {
+    return std::string(reinterpret_cast<const char*>(get_text(iCol)));
+}
+
 const void *Query::get_text16(int iCol) {
     return sqlite3_column_text16(stmt, iCol);
 }

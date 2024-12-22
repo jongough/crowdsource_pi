@@ -19,5 +19,6 @@ create table if not exists target_position (
     latitude float,
     longitude float,
     target_latitude float,
-    target_longitude float
+    target_longitude float,
+    sent integer default false
 );

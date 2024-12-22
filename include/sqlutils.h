@@ -34,6 +34,7 @@ public:
     int get_int(int iCol);
     sqlite3_int64 get_int64(int iCol);
     const unsigned char *get_text(int iCol);
+    const std::string get_string(int iCol);
     const void *get_text16(int iCol);
     sqlite3_value *get_value(int iCol);
     int get_bytes(int iCol);
