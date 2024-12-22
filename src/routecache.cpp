@@ -103,7 +103,7 @@ void Routecache::Insert(
         )");
         query.bind(1, uuid);
         query.step();
-        route_ids[target_id] = query.get_int(1);
+        route_ids[target_id] = query.get_int(0);
     }
     route_updates[target_id] = now;
     
