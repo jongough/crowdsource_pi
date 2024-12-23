@@ -20,6 +20,7 @@ public:
     Query& bind(int param);
     Query& bind(int param, const char* value, int len, void(*destructor)(void*));
     Query& bind(int param, std::string& value);
+    Query& bind(int param, std::string&& value);
     Query& bindWChar(int param, const void* value, int len, void(*destructor)(void*));
     Query& bind(int param, const char*value, sqlite3_uint64 len, void(*destructor)(void*), unsigned char encoding);
     Query& bind(int param, const sqlite3_value* value);

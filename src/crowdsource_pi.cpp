@@ -212,7 +212,9 @@ int crowdsource_pi::Init(void)
         return 0;
     }
 
-    connector = new Connector(cache);
+    connector = new Connector(
+        cache,
+        GetPluginDataDir("crowdsource_pi").ToStdString());
     connector->Run();
     
     return (

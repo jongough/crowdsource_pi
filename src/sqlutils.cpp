@@ -77,6 +77,9 @@ Query& Query::bind(int param, std::string& value) {
     if (res != SQLITE_OK) throw QueryException(db, query_string);
     return *this;
 }
+Query& Query::bind(int param, std::string&& value) {
+    return bind(param, value);
+}
 
 Query& Query::bindWChar(int param, const void* value, int len, void(*destructor)(void*)) {
     int res = sqlite3_bind_text16(stmt, param, value, len, destructor);

@@ -6,7 +6,7 @@
 #include <wx/datetime.h>
 #include <sqlite3.h>
 #include <mutex>
-#include <avro.h>
+#include "avroutils.h"
 
 class Routecache {
 public:
@@ -35,10 +35,8 @@ public:
         double longitude,
         double target_latitude,
         double target_longitude);
-    void Retrieve(
-        avro_value_t *linestring,
-        std::string& uuid, std::string& timestamp);
-    void MarkAsSent(std::string uuid, std::string timestamp);
+    void Retrieve(AvroValue& route_message);
+    void MarkAsSent(AvroValue& route_message);
 
 private:
     std::string migrations_dir;

@@ -5,17 +5,22 @@
 #include <wx/thread.h>
 #include "routecache.h"
 #include "socketutils.h"
+#include "avroutils.h"
 
 class Connector : public wxThread {
 private:
     Routecache *routecache;
     Socket *socket;
+    AvroSchema *schema;
     bool finalize;
-    
+    bool finalized;
+    int callid;
+
 public:
-    Connector(Routecache *routecache);
+    Connector(Routecache *routecache, std::string plugin_dir);
     ~Connector();
     wxThread::ExitCode Entry() override;
+    void SendTracks();
 };
     
 #endif

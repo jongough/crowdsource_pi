@@ -235,14 +235,14 @@ void Routecache::Insert(
 }
 
 
-void Routecache::Retrieve(avro_value_t *linestring, std::string& uuid, std::string& timestamp) {
+void Routecache::Retrieve(AvroValue& route_message) {
     std::lock_guard<std::mutex> guard(lock);
 
     Query query(db, R"(
       select
         target.uuid,
         target_position.timestamp,
-        strftime('%s', timestamp) +  strftime('%f', timestamp) - strftime('%S', timestamp)
+        (strftime('%s', timestamp) +  strftime('%f', timestamp) - strftime('%S', timestamp)) * 1000
           as timestamp_epoch,
         target_position.target_latitude,
         target_position.target_longitude
@@ -266,33 +266,39 @@ void Routecache::Retrieve(avro_value_t *linestring, std::string& uuid, std::stri
         limit 10;
       )");
 
-    while (query.step()) {
-         uuid = query.get_string(0);
-         timestamp = query.get_string(1);
+    std::string uuid;
+    std::string timestamp;
 
-         avro_value_t position;
-         avro_value_t lat_value;
-         avro_value_t lon_value;
-         avro_value_t timestamp_value;
-         if (avro_value_append(linestring, &position, NULL) != 0)
-             throw std::runtime_error("Avro: Unable to append position to linestring");
-         if (avro_value_get_by_name(&position, "lat", &lat_value, NULL) != 0)
-             throw std::runtime_error("Avro: Unable to append latitude to linestring");
-         if (avro_value_get_by_name(&position, "lon", &lon_value, NULL) != 0)
-             throw std::runtime_error("Avro: Unable to append latitude to linestring");
-         if (avro_value_get_by_name(&position, "timestamp", &timestamp_value, NULL) != 0)
-             throw std::runtime_error("Avro: Unable to append latitude to linestring");
-         if (avro_value_set_float(&lat_value, (float) query.get_double(3)) != 0)
-             throw std::runtime_error("Avro: Unable to set position latitude");
-         if (avro_value_set_float(&lon_value, (float) query.get_double(4)) != 0)
-             throw std::runtime_error("Avro: Unable to set position longitude");
-         if (avro_value_set_float(&timestamp_value, (float) query.get_double(2)) != 0)
-             throw std::runtime_error("Avro: Unable to set position timestamp");         
+    AvroValue linestring = route_message.Add("route");
+    bool isfirst = true;
+    double start;
+    while (query.step()) {
+        if (isfirst) {
+            route_message.Add("uuid").Set(query.get_string(0));
+            start = query.get_double(2);
+            route_message.Add("start").Set(start);
+            isfirst = false;
+        }
+        AvroValue position = linestring.Append();
+        position.Add("lat").Set((float) query.get_double(3));
+        position.Add("lon").Set((float) query.get_double(4));
+        position.Add("timestamp").Set(
+            (float) (query.get_double(2) - start));
     }
 }
 
-void Routecache::MarkAsSent(std::string uuid, std::string timestamp) {
+void Routecache::MarkAsSent(AvroValue& route_message) {
     std::lock_guard<std::mutex> guard(lock);
+
+    double end = route_message
+     .Get("route")
+     .Get(-1)
+     .Get("timestamp")
+     .GetLong()
+     + route_message
+     .Get("start")
+     .GetLong();
+     
     Query(db, R"(
       update
         target_position
@@ -300,10 +306,10 @@ void Routecache::MarkAsSent(std::string uuid, std::string timestamp) {
         sent = true
       where
         target_id = (select target_id from target where uuid = ?)
-        and timestamp < ?;
+        and timestamp < datetime(? / 1000, 'unixepoch');
     )")
-     .bind(1, uuid)
-     .bind(2, timestamp)
+     .bind(1, route_message.Get("uuid").GetString())
+     .bind(2, end)
      .step();
 }
 
