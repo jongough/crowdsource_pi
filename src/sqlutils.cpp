@@ -1,4 +1,5 @@
 #include "sqlutils.h"
+#include <iostream>
 
 Query::Query(sqlite3* db, std::string query_string) {
     this->db = db;
@@ -73,7 +74,7 @@ Query& Query::bind(int param, const char* value, int len, void(*destructor)(void
 
 static void std_string_ref_destructor(void*) {}
 Query& Query::bind(int param, std::string& value) {
-    int res = sqlite3_bind_text(stmt, param, value.c_str(), value.length(), &std_string_ref_destructor);
+    int res = sqlite3_bind_text(stmt, param, value.c_str(), -1, &std_string_ref_destructor);
     if (res != SQLITE_OK) throw QueryException(db, query_string);
     return *this;
 }
@@ -119,6 +120,15 @@ Query& Query::bindZeroblob(int param, sqlite3_uint64 len) {
 
 bool Query::step() {
     int res = sqlite3_step(stmt);
+
+    if (debug) {
+        const char *expanded_sql = sqlite3_expanded_sql(stmt);
+        if (expanded_sql) {
+           std::cerr << "Expanded SQL: " << expanded_sql << "\n";
+           sqlite3_free((void *)expanded_sql);
+        }
+    }
+    
     if (res == SQLITE_ROW) return true;
     if (res == SQLITE_DONE) return false;
     if (res == SQLITE_OK) return false;
@@ -169,3 +179,6 @@ int Query::get_type(int iCol) {
     return sqlite3_column_type(stmt, iCol);}
 
 
+int Query::changes() {
+    return sqlite3_changes(db);
+}

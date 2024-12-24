@@ -35,7 +35,7 @@ public:
         double longitude,
         double target_latitude,
         double target_longitude);
-    void Retrieve(AvroValue& route_message);
+    bool Retrieve(AvroValue& route_message);
     void MarkAsSent(AvroValue& route_message);
 
 private:

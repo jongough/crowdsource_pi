@@ -235,7 +235,7 @@ void Routecache::Insert(
 }
 
 
-void Routecache::Retrieve(AvroValue& route_message) {
+bool Routecache::Retrieve(AvroValue& route_message) {
     std::lock_guard<std::mutex> guard(lock);
 
     Query query(db, R"(
@@ -269,47 +269,63 @@ void Routecache::Retrieve(AvroValue& route_message) {
     std::string uuid;
     std::string timestamp;
 
-    AvroValue linestring = route_message.Add("route");
+    AvroValue linestring = route_message.Get("route");
     bool isfirst = true;
     double start;
+    route_message.Get("nmea").SetCurrentBranch(0);
+    
     while (query.step()) {
         if (isfirst) {
-            route_message.Add("uuid").Set(query.get_string(0));
+            route_message.Get("uuid").SetCurrentBranch(1).Set(query.get_string(0));
             start = query.get_double(2);
-            route_message.Add("start").Set(start);
+            route_message.Get("start").Set((long) start);
             isfirst = false;
         }
         AvroValue position = linestring.Append();
-        position.Add("lat").Set((float) query.get_double(3));
-        position.Add("lon").Set((float) query.get_double(4));
-        position.Add("timestamp").Set(
+        position.Get("lat").Set((float) query.get_double(3));
+        position.Get("lon").Set((float) query.get_double(4));
+        position.Get("timestamp").Set(
             (float) (query.get_double(2) - start));
     }
+    return !isfirst;
 }
 
 void Routecache::MarkAsSent(AvroValue& route_message) {
     std::lock_guard<std::mutex> guard(lock);
 
-    double end = route_message
-     .Get("route")
-     .Get(-1)
-     .Get("timestamp")
-     .GetLong()
+    double end =
+     ((long) route_message
+      .Get("route")
+      .Get(-1)
+      .Get("timestamp")
+      .GetFloat())
      + route_message
      .Get("start")
      .GetLong();
-     
-    Query(db, R"(
+
+    std::string uuid = route_message.Get("uuid").Get().GetString();
+    
+    Query query(db, R"(
       update
         target_position
       set
         sent = true
       where
         target_id = (select target_id from target where uuid = ?)
-        and timestamp < datetime(? / 1000, 'unixepoch');
-    )")
-     .bind(1, route_message.Get("uuid").GetString())
+        and timestamp <= datetime(? / 1000, 'unixepoch');
+    )");
+    
+    query
+     .bind(1, uuid)
      .bind(2, end)
      .step();
+    std::cerr
+     << "Updated "
+     << std::to_string(query.changes())
+     << " rows for "
+     << uuid
+     << " @ "
+     << end
+     << "." << std::endl;
 }
 

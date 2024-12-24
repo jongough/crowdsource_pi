@@ -2,6 +2,7 @@
 #define _AVROUTILS_H_
 
 #include <avro.h>
+#include <string>
 
 class AvroValue;
 
@@ -22,6 +23,7 @@ public:
     ~AvroValue();
     std::string Serialize();
     avro_type_t GetType();
+    std::string GetTypeName();
     avro_schema_t GetSchema();
     bool Equal(AvroValue other);
     uint32_t Hash();
@@ -38,8 +40,8 @@ public:
     std::string GetFixed();
     size_t GetSize();
     AvroValue Get(std::string name, size_t *index=NULL);
-    AvroValue Get(size_t index);
-    AvroValue Get(size_t index, std::string& key);
+    AvroValue Get(ssize_t index);
+    AvroValue Get(ssize_t index, std::string& key);
     int GetDiscriminant();
     AvroValue Get();
     
@@ -57,13 +59,17 @@ public:
     AvroValue Append(size_t *new_index=NULL);
     AvroValue Add(std::string name, size_t *index=NULL, int *is_new=NULL);
     AvroValue SetCurrentBranch(int discriminant);
+    void Debug(std::string path = "");
+
+private:
+    void Failure(std::string attempt);
 };
 
 class AvroValueFromSchema : public AvroValue {
 public:
     AvroSchema& schema;
 
-    AvroValueFromSchema(AvroSchema );
+    AvroValueFromSchema(AvroSchema& schema);
     ~AvroValueFromSchema();
 };
 
@@ -71,10 +77,9 @@ class AvroMemoryWriter {
 public:
     AvroValue& value;
     avro_writer_t writer;
-    char *buffer = NULL;
-    size_t buffer_size = 0;
+    char buffer[4096];
 
-     AvroMemoryWriter(AvroValue);
+     AvroMemoryWriter(AvroValue& value);
      ~AvroMemoryWriter();
 };
 

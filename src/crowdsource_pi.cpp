@@ -189,8 +189,8 @@ crowdsource_pi::~crowdsource_pi()
 {
     if (cache) delete cache;
     if (connector) delete connector;
-}
 
+}
 int crowdsource_pi::Init(void)
 {
     AddLocaleCatalog( PLUGIN_CATALOG_NAME );
@@ -207,14 +207,14 @@ int crowdsource_pi::Init(void)
 
     try {
         cache = new Routecache(migrations, db_name);
+        connector = new Connector(
+            cache,
+            GetPluginDataDir("crowdsource_pi").ToStdString());
     } catch (const std::exception& e) {
         std::cerr << e.what() << " Disabling plugin\n";
         return 0;
     }
 
-    connector = new Connector(
-        cache,
-        GetPluginDataDir("crowdsource_pi").ToStdString());
     connector->Run();
     
     return (

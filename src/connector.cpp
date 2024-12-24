@@ -3,7 +3,7 @@
 #include <wx/fileconf.h>
 
 Connector::Connector(Routecache *routecache, std::string plugin_dir) :
-  wxThread(wxTHREAD_DETACHED),
+  wxThread(wxTHREAD_JOINABLE),
   routecache(routecache),
   socket(nullptr),
   schema(nullptr),
@@ -11,7 +11,10 @@ Connector::Connector(Routecache *routecache, std::string plugin_dir) :
   finalized(false),
   callid(0) {
       wxString slash(wxFileName::GetPathSeparator());
-      wxString schema_file = wxString(plugin_dir) + slash + wxString("proto_avro.json");
+      wxString schema_file =
+          wxString(plugin_dir)
+          + slash + wxString("data")
+          + slash + wxString("proto_avro.json");
       wxFile file(schema_file);
       wxString schema_json;
       if (!file.IsOpened()) {
@@ -24,6 +27,7 @@ Connector::Connector(Routecache *routecache, std::string plugin_dir) :
 Connector::~Connector() {
     finalize = true;
     while (!finalized) wxThread::Sleep(500);
+    this->Wait();
     if (socket) delete socket;
     socket = nullptr;
     if (schema) delete schema;
@@ -32,11 +36,12 @@ Connector::~Connector() {
 
 void Connector::SendTracks() {
     AvroValueFromSchema value(*schema);
-    AvroValue call = value.SetCurrentBranch(0).Add("Call");
-    call.Add("id").Set(++callid);
-    AvroValue submit = call.Add("Call").SetCurrentBranch(1).Add("Submit");
+    AvroValue call = value.Get("Message").SetCurrentBranch(0).Get("Call");
+    call.Get("id").Set(++callid);
+    AvroValue submit = call.Get("Call").SetCurrentBranch(1).Get("Submit");
     
-    routecache->Retrieve(submit);
+    if (!routecache->Retrieve(submit)) return;
+    value.Debug();
     socket->WaitAndSendInitial(value.Serialize(), 0);
     routecache->MarkAsSent(submit);
 }
@@ -48,11 +53,21 @@ wxThread::ExitCode Connector::Entry() {
         ~Finalizer() { finalized = true; }
     };
     Finalizer finalizer(finalized);
- 
-    socket = new Socket("127.0.0.1", 9900, 100, 60000);
+
+    try {
+        socket = new Socket("127.0.0.1", 9900, 100, 60000);
+        while (!finalize) {
+            SendTracks();
+            wxThread::Sleep(500);
+        }
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << " in Connector";
+    }
+    // If we just exit here, the thread is deleted, and then whoever
+    // has a reference to it, and tries to delete that, gets a
+    // SIGSEGV(!!!)
     while (!finalize) {
-        SendTracks();
-        wxThread::Sleep(10000);
+        wxThread::Sleep(500);
     }
     return 0;
 };

@@ -41,11 +41,13 @@ public:
     int get_bytes(int iCol);
     int get_bytes16(int iCol);
     int get_type(int iCol);
-    
+    int changes();
+
     std::string query_string;
     const char *remaining_query_string;
     sqlite3_stmt* stmt;
-    sqlite3* db; 
+    sqlite3* db;
+    bool debug;
 };
 
 
