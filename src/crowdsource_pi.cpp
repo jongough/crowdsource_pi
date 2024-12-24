@@ -56,6 +56,7 @@
 
 #include "wx/jsonwriter.h"
 
+
 #ifndef DECL_EXP
 #ifdef __WXMSW__
 #define DECL_EXP     __declspec(dllexport)
@@ -99,6 +100,7 @@ crowdsource_pi::crowdsource_pi(void *ppimgr)
 
     cache = nullptr;
     connector = nullptr;
+    preferences_window = nullptr;
     
 //    m_shareLocn = GetPluginDataDir("radar_pi") + wxFileName::GetPathSeparator() + _T("data") + wxFileName::GetPathSeparator();
         
@@ -189,7 +191,7 @@ crowdsource_pi::~crowdsource_pi()
 {
     if (cache) delete cache;
     if (connector) delete connector;
-
+    if (preferences_window) delete preferences_window;
 }
 int crowdsource_pi::Init(void)
 {
@@ -221,13 +223,13 @@ int crowdsource_pi::Init(void)
         WANTS_CURSOR_LATLON       |
 //        WANTS_TOOLBAR_CALLBACK    |
 //        INSTALLS_TOOLBAR_TOOL     |
-//        WANTS_CONFIG              |
+        WANTS_CONFIG              |
         INSTALLS_TOOLBOX_PAGE     |
         INSTALLS_CONTEXTMENU_ITEMS  |
         WANTS_NMEA_EVENTS         |
         WANTS_NMEA_SENTENCES        |
         //    USES_AUI_MANAGER            |
-//        WANTS_PREFERENCES         |
+        WANTS_PREFERENCES         |
         //    WANTS_ONPAINT_VIEWPORT      |
         WANTS_PLUGIN_MESSAGING    |
         WANTS_LATE_INIT           |
@@ -296,6 +298,25 @@ wxString crowdsource_pi::GetLongDescription()
 wxBitmap *crowdsource_pi::GetPlugInBitmap()
 {
     return m_pdeficon;
+}
+
+void crowdsource_pi::ShowPreferencesDialog(wxWindow *parent) {
+    if (!preferences_window) {
+        preferences_window = new PreferencesWindow(
+            parent, wxID_ANY, wxString("Crowdsource preferences"));
+    }
+
+    if (preferences_window->ShowModal() == wxID_SAVE) {
+     
+    }
+    preferences_window->Destroy();
+    delete preferences_window;
+    preferences_window = nullptr;
+}
+
+bool crowdsource_pi::LoadConfig(void) {
+}
+bool crowdsource_pi::SaveConfig(void) {
 }
 
 void crowdsource_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)

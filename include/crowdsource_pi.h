@@ -144,6 +144,7 @@ std::cout << x  << std::endl ; } while (0)
 #include <sqlite3.h>
 #include "routecache.h"
 #include "connector.h"
+#include "preferences.h"
 
 //----------------------------------------------------------------------------------------------------------
 //    The PlugIn Class Definition
@@ -185,6 +186,7 @@ public:
     wxString GetLongDescription();
  
     void SetNMEASentence(wxString &sentence);
+    void ShowPreferencesDialog(wxWindow* parent);
 
     void SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix); // 18
 
@@ -195,6 +197,9 @@ public:
 
     void Polar2Pos(double, double, double&, double&);
  
+    bool LoadConfig();
+    bool SaveConfig();
+
 private:
     double latitude;
     double longitude;
@@ -203,6 +208,7 @@ private:
 
     Routecache *cache;
     Connector *connector;
+    PreferencesWindow *preferences_window;
 };
 
 #endif

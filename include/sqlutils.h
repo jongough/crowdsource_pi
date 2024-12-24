@@ -47,7 +47,7 @@ public:
     const char *remaining_query_string;
     sqlite3_stmt* stmt;
     sqlite3* db;
-    bool debug;
+    bool debug = false;
 };
 
 
