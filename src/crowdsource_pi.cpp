@@ -197,7 +197,7 @@ int crowdsource_pi::Init(void)
 {
     AddLocaleCatalog( PLUGIN_CATALOG_NAME );
     m_parent_window = GetOCPNCanvasWindow();
-    m_pTPConfig = GetOCPNConfigObject();
+    config = GetOCPNConfigObject();
 
     std::string slash = wxString(wxFileName::GetPathSeparator()).ToStdString();
     std::string migrations = (GetPluginDataDir("crowdsource_pi").ToStdString()
@@ -210,8 +210,9 @@ int crowdsource_pi::Init(void)
     try {
         cache = new Routecache(migrations, db_name);
         connector = new Connector(
-            cache,
-            GetPluginDataDir("crowdsource_pi").ToStdString());
+             cache,
+             GetPluginDataDir("crowdsource_pi").ToStdString(),
+             config);
     } catch (const std::exception& e) {
         std::cerr << e.what() << " Disabling plugin\n";
         return 0;
@@ -302,21 +303,44 @@ wxBitmap *crowdsource_pi::GetPlugInBitmap()
 
 void crowdsource_pi::ShowPreferencesDialog(wxWindow *parent) {
     if (!preferences_window) {
-        preferences_window = new PreferencesWindow(
+        preferences_window = new CrowdsourcePreferencesWindow(
             parent, wxID_ANY, wxString("Crowdsource preferences"));
     }
 
+    wxString server;
+    long port;
+    wxString api_key;
+    float min_reconnect_time;
+    float max_reconnect_time;
+    config->Read("/Server/server", &server, "crowdsource.kahu.earth");
+    config->Read("/Server/port", &port, 9900);
+    config->Read("/Server/api_key", &api_key, "");
+    config->Read("/Connection/min_reconnect_time", &min_reconnect_time, 100.0);
+    config->Read("/Connection/max_reconnect_time", &max_reconnect_time, 600.0);
+
+    preferences_window->server->SetValue(server.ToUTF8());
+    preferences_window->port->SetValue(port);
+    preferences_window->api_key->SetValue(api_key);
+    preferences_window->min_reconnect_time->SetValue(min_reconnect_time);
+    preferences_window->max_reconnect_time->SetValue(max_reconnect_time);
+
     if (preferences_window->ShowModal() == wxID_SAVE) {
-     
+        config->Write("/Server/server", preferences_window->server->GetValue());
+        config->Write("/Server/port", preferences_window->port->GetValue());
+        config->Write("/Server/api_key", preferences_window->api_key->GetValue());
+        config->Write("/Connection/min_reconnect_time", preferences_window->min_reconnect_time->GetValue());
+        config->Write("/Connection/max_reconnect_time", preferences_window->max_reconnect_time->GetValue());
+        config->Flush();
+        
+        if (connector) delete connector;
+        connector = new Connector(
+             cache,
+             GetPluginDataDir("crowdsource_pi").ToStdString(),
+             config);
     }
     preferences_window->Destroy();
     delete preferences_window;
     preferences_window = nullptr;
-}
-
-bool crowdsource_pi::LoadConfig(void) {
-}
-bool crowdsource_pi::SaveConfig(void) {
 }
 
 void crowdsource_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)

@@ -160,6 +160,18 @@ std::cout << x  << std::endl ; } while (0)
 #define rad2deg(x) ((x)*360.0 / (2 * PI))
 #endif
 
+class crowdsource_pi;
+
+class CrowdsourcePreferencesWindow : public PreferencesWindow {
+public:
+    CrowdsourcePreferencesWindow(wxWindow* parent, wxWindowID id, const wxString& title,
+                                 const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
+                                 long style = wxDEFAULT_DIALOG_STYLE)
+     : PreferencesWindow(parent, id, title, pos, size, style) {}
+protected:
+    friend class crowdsource_pi;
+};
+
 class crowdsource_pi : public opencpn_plugin_118
 {
 public:
@@ -168,7 +180,7 @@ public:
     ~crowdsource_pi();
 
     wxWindow            *m_parent_window;
-    wxFileConfig        *m_pTPConfig;
+    wxFileConfig        *config;
     wxString *l_pDir;
  
     //    The required PlugIn Methods
@@ -196,9 +208,6 @@ public:
     int GetPlugInVersionPost(); // 117  
 
     void Polar2Pos(double, double, double&, double&);
- 
-    bool LoadConfig();
-    bool SaveConfig();
 
 private:
     double latitude;
@@ -208,7 +217,7 @@ private:
 
     Routecache *cache;
     Connector *connector;
-    PreferencesWindow *preferences_window;
+    CrowdsourcePreferencesWindow *preferences_window;
 };
 
 #endif

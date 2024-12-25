@@ -36,7 +36,7 @@ private:
 protected:
     // begin wxGlade: PreferencesWindow::attributes
     wxTextCtrl* server;
-    wxTextCtrl* port;
+    wxSpinCtrl* port;
     wxTextCtrl* api_key;
     wxHyperlinkCtrl* hyperlink_1;
     wxSpinCtrlDouble* min_reconnect_time;

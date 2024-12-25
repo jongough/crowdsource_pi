@@ -31,7 +31,7 @@ PreferencesWindow::PreferencesWindow(wxWindow* parent, wxWindowID id, const wxSt
     grid_sizer_1->Add(server, 0, 0, 0);
     wxStaticText* label_2 = new wxStaticText(this, wxID_ANY, wxT("Port:"));
     grid_sizer_1->Add(label_2, 0, 0, 0);
-    port = new wxTextCtrl(this, wxID_ANY, wxT("9900"));
+    port = new wxSpinCtrl(this, wxID_ANY, wxT("0"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 65535);
     grid_sizer_1->Add(port, 0, 0, 0);
     wxStaticText* label_13 = new wxStaticText(this, wxID_ANY, wxT("API key:"));
     grid_sizer_1->Add(label_13, 0, 0, 0);

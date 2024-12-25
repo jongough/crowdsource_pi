@@ -2,9 +2,10 @@
 #include <wx/string.h>
 #include <wx/fileconf.h>
 
-Connector::Connector(Routecache *routecache, std::string plugin_dir) :
+Connector::Connector(Routecache *routecache, std::string plugin_dir, wxFileConfig *config) :
   wxThread(wxTHREAD_JOINABLE),
   routecache(routecache),
+  config(config),
   socket(nullptr),
   schema(nullptr),
   finalize(false),
@@ -54,8 +55,19 @@ wxThread::ExitCode Connector::Entry() {
     };
     Finalizer finalizer(finalized);
 
+    wxString server;
+    long port;
+    wxString api_key;
+    float min_reconnect_time;
+    float max_reconnect_time;
+    config->Read("/Server/server", &server, "crowdsource.kahu.earth");
+    config->Read("/Server/port", &port, 9900);
+    config->Read("/Server/api_key", &api_key, "");
+    config->Read("/Connection/min_reconnect_time", &min_reconnect_time, 100.0);
+    config->Read("/Connection/max_reconnect_time", &max_reconnect_time, 600.0);
+    
     try {
-        socket = new Socket("127.0.0.1", 9900, 100, 60000);
+     socket = new Socket(std::string(server.ToUTF8()), port, min_reconnect_time, max_reconnect_time);
         while (!finalize) {
             SendTracks();
             wxThread::Sleep(500);
