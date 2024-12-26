@@ -190,7 +190,7 @@ crowdsource_pi::crowdsource_pi(void *ppimgr)
 crowdsource_pi::~crowdsource_pi()
 {
     if (cache) delete cache;
-    if (connector) delete connector;
+    if (connector) { connector->Delete(); delete connector; }
     if (preferences_window) delete preferences_window;
 }
 int crowdsource_pi::Init(void)
@@ -332,7 +332,7 @@ void crowdsource_pi::ShowPreferencesDialog(wxWindow *parent) {
         config->Write("/Connection/max_reconnect_time", preferences_window->max_reconnect_time->GetValue());
         config->Flush();
         
-        if (connector) delete connector;
+        if (connector) { connector->Delete(); delete connector; }
         connector = new Connector(
              cache,
              GetPluginDataDir("crowdsource_pi").ToStdString(),

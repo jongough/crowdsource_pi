@@ -1,11 +1,12 @@
 #include "socketutils.h"
 
-Socket::Socket(const std::string& ip, int port, int min_reconnect_time, int max_reconnect_time) :
+Socket::Socket(const std::string& ip, int port, int min_reconnect_time, int max_reconnect_time, CancelFunction cancel_function) :
   reconnect_time(0),
   ip(ip),
   port(port),
   min_reconnect_time(min_reconnect_time),
-  max_reconnect_time(max_reconnect_time) {
+  max_reconnect_time(max_reconnect_time),
+  cancel_function(cancel_function) {
     sock = nullptr;
 }
 
@@ -23,9 +24,23 @@ void Socket::ConnectionFailure(wxSocketError error, const std::string& attempt) 
     throw SocketException(error, attempt);
 }
 
+bool Socket::TryCancel() {
+    if (!cancel_function) return false;
+    return cancel_function();
+}
+
 void Socket::Connect() {
-    if (reconnect_time > 0) wxMilliSleep(reconnect_time);
- 
+    int slept;
+    int tosleep;
+    // Sleep reconnect_time ms, but check TryCancel regularly
+    if (reconnect_time > 0) {
+        slept = 0;
+        while (!TryCancel() && (slept < reconnect_time)) {
+            tosleep = reconnect_time - slept > 200 ? 200 : reconnect_time - slept;
+            wxMilliSleep(tosleep);
+            slept += tosleep;
+        }
+    }
     wxIPV4address serv_addr;
     serv_addr.Hostname(ip);
     serv_addr.Service(port);
@@ -35,7 +50,12 @@ void Socket::Connect() {
 
     sock->Connect(serv_addr, false);
 
-    sock->WaitOnConnect(10);
+    slept = 0;
+    while (!TryCancel() && (slept < 10000)) {
+        tosleep = 10000 - slept > 200 ? 200 : 10000 - slept;
+        if (sock->WaitOnConnect(0, tosleep)) break;
+        slept += tosleep;
+    }
 
     if (!sock->IsConnected()) {
         ConnectionFailure(sock->LastError(), "Connection Failed");
@@ -45,7 +65,7 @@ void Socket::Connect() {
 }
 
 void Socket::EnsureConnection() {
-    while (sock == nullptr) {
+    while (!TryCancel() && !sock) {
         try {
             Connect();
         } catch (const std::exception& e) {
@@ -70,7 +90,7 @@ void Socket::Send(const std::string& data, int flags) {
 }
 
 void Socket::WaitAndSendInitial(const std::string& data, int flags) {
-    while (true) {
+    while (!TryCancel()) {
         EnsureConnection();
         try {
             Send(data, flags);

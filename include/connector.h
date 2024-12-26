@@ -14,8 +14,6 @@ private:
     wxFileConfig *config;
     Socket *socket;
     AvroSchema *schema;
-    bool finalize;
-    bool finalized;
     int callid;
 
 public:

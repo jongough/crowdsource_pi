@@ -7,6 +7,8 @@
 #include <stdexcept>
 #include <string.h>
 
+typedef std::function<bool()> CancelFunction;
+
 class Socket {
 private:
     wxSocketClient* sock;
@@ -16,8 +18,10 @@ public:
     int port;
     int min_reconnect_time;
     int max_reconnect_time;
-    
-    Socket(const std::string& ip, int port, int min_reconnect_time, int max_reconnect_time);
+    CancelFunction cancel_function;
+ 
+    Socket(const std::string& ip, int port, int min_reconnect_time, int max_reconnect_time, CancelFunction cancel_function = nullptr);
+    bool TryCancel();
     void Connect();
     void EnsureConnection();
     void ConnectionFailure(wxSocketError error, const std::string&);

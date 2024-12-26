@@ -8,8 +8,6 @@ Connector::Connector(Routecache *routecache, std::string plugin_dir, wxFileConfi
   config(config),
   socket(nullptr),
   schema(nullptr),
-  finalize(false),
-  finalized(false),
   callid(0) {
       wxString slash(wxFileName::GetPathSeparator());
       wxString schema_file =
@@ -26,9 +24,6 @@ Connector::Connector(Routecache *routecache, std::string plugin_dir, wxFileConfi
 }
 
 Connector::~Connector() {
-    finalize = true;
-    while (!finalized) wxThread::Sleep(500);
-    this->Wait();
     if (socket) delete socket;
     socket = nullptr;
     if (schema) delete schema;
@@ -48,13 +43,6 @@ void Connector::SendTracks() {
 }
 
 wxThread::ExitCode Connector::Entry() {
-    struct Finalizer {
-        bool& finalized;
-        Finalizer(bool& f) : finalized(f) {}
-        ~Finalizer() { finalized = true; }
-    };
-    Finalizer finalizer(finalized);
-
     wxString server;
     long port;
     wxString api_key;
@@ -67,19 +55,13 @@ wxThread::ExitCode Connector::Entry() {
     config->Read("/Connection/max_reconnect_time", &max_reconnect_time, 600.0);
     
     try {
-     socket = new Socket(std::string(server.ToUTF8()), port, min_reconnect_time, max_reconnect_time);
-        while (!finalize) {
+     socket = new Socket(std::string(server.ToUTF8()), port, min_reconnect_time, max_reconnect_time, [this]() { return this->TestDestroy(); });
+        while (!TestDestroy()) {
             SendTracks();
             wxThread::Sleep(500);
         }
     } catch (const std::exception& e) {
         std::cerr << e.what() << " in Connector";
-    }
-    // If we just exit here, the thread is deleted, and then whoever
-    // has a reference to it, and tries to delete that, gets a
-    // SIGSEGV(!!!)
-    while (!finalize) {
-        wxThread::Sleep(500);
     }
     return 0;
 };
