@@ -8,6 +8,7 @@
 #include <string.h>
 
 typedef std::function<bool()> CancelFunction;
+typedef std::function<void()> ConnectFunction;
 
 class Socket {
 private:
@@ -19,8 +20,8 @@ public:
     int min_reconnect_time;
     int max_reconnect_time;
     CancelFunction cancel_function;
- 
-    Socket(const std::string& ip, int port, int min_reconnect_time, int max_reconnect_time, CancelFunction cancel_function = nullptr);
+    ConnectFunction connect_function;
+    Socket(const std::string& ip, int port, int min_reconnect_time, int max_reconnect_time, CancelFunction cancel_function = nullptr, ConnectFunction connect_function = nullptr);
     bool TryCancel();
     void Connect();
     void EnsureConnection();

@@ -23,6 +23,7 @@ public:
         wxFileConfig *config);
     ~Connector();
     wxThread::ExitCode Entry() override;
+    void Login();
     void SendTracks();
 };
     

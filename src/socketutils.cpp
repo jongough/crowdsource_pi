@@ -1,12 +1,13 @@
 #include "socketutils.h"
 
-Socket::Socket(const std::string& ip, int port, int min_reconnect_time, int max_reconnect_time, CancelFunction cancel_function) :
+Socket::Socket(const std::string& ip, int port, int min_reconnect_time, int max_reconnect_time, CancelFunction cancel_function, ConnectFunction connect_function) :
   reconnect_time(0),
   ip(ip),
   port(port),
   min_reconnect_time(min_reconnect_time),
   max_reconnect_time(max_reconnect_time),
-  cancel_function(cancel_function) {
+  cancel_function(cancel_function),
+  connect_function(connect_function) {
     sock = nullptr;
 }
 
@@ -61,6 +62,8 @@ void Socket::Connect() {
         ConnectionFailure(sock->LastError(), "Connection Failed");
     }
 
+    if (connect_function) connect_function();
+    
     reconnect_time = min_reconnect_time;
 }
 

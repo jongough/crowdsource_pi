@@ -30,6 +30,20 @@ Connector::~Connector() {
     schema = nullptr;
 }
 
+void Connector::Login() {
+    wxString api_key;
+    config->Read("/Server/api_key", &api_key, "");
+
+    AvroValueFromSchema value(*schema);
+    AvroValue call = value.Get("Message").SetCurrentBranch(0).Get("Call");
+    call.Get("id").Set(++callid);
+    AvroValue login = call.Get("Call").SetCurrentBranch(0).Get("Login");
+    login.Get("apikey").Set(std::string(api_key.ToUTF8()));
+    
+    value.Debug();
+    socket->Send(value.Serialize(), 0);
+}
+
 void Connector::SendTracks() {
     AvroValueFromSchema value(*schema);
     AvroValue call = value.Get("Message").SetCurrentBranch(0).Get("Call");
@@ -38,30 +52,37 @@ void Connector::SendTracks() {
     
     if (!routecache->Retrieve(submit)) return;
     value.Debug();
-    socket->WaitAndSendInitial(value.Serialize(), 0);
+    socket->Send(value.Serialize(), 0);
     routecache->MarkAsSent(submit);
 }
 
 wxThread::ExitCode Connector::Entry() {
     wxString server;
     long port;
-    wxString api_key;
     float min_reconnect_time;
     float max_reconnect_time;
     config->Read("/Server/server", &server, "crowdsource.kahu.earth");
     config->Read("/Server/port", &port, 9900);
-    config->Read("/Server/api_key", &api_key, "");
     config->Read("/Connection/min_reconnect_time", &min_reconnect_time, 100.0);
     config->Read("/Connection/max_reconnect_time", &max_reconnect_time, 600.0);
     
-    try {
-     socket = new Socket(std::string(server.ToUTF8()), port, min_reconnect_time, max_reconnect_time, [this]() { return this->TestDestroy(); });
-        while (!TestDestroy()) {
+    socket = new Socket(
+        std::string(server.ToUTF8()),
+        port,
+        min_reconnect_time,
+        max_reconnect_time,
+        [this]() { return this->TestDestroy(); },
+        [this]() { return this->Login(); }
+    );
+
+    while (!TestDestroy()) {
+        try {
+            socket->EnsureConnection();
             SendTracks();
             wxThread::Sleep(500);
+        } catch (const std::exception& e) {
+            std::cerr << e.what() << " in Connector\n";
         }
-    } catch (const std::exception& e) {
-        std::cerr << e.what() << " in Connector";
     }
     return 0;
 };
