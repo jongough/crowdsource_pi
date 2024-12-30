@@ -60,9 +60,9 @@ void Socket::Connect() {
     serv_addr.Hostname(ip);
     serv_addr.Service(port);
 
-    sock = new wxSocketClient();
+    sock = new wxSocketClient(wxSOCKET_BLOCK);
     std::cerr << "Created wxSocket " << sock << " in " << std::this_thread::get_id() << "\n";
-    sock->SetTimeout(1);
+    sock->SetTimeout(0);
     sock->Connect(serv_addr, false);
 
     slept = 0;
@@ -71,7 +71,7 @@ void Socket::Connect() {
         if (sock->WaitOnConnect(0, tosleep)) break;
         slept += tosleep;
     }
-
+    
     if (!sock->IsConnected()) {
         ConnectionFailure(sock->LastError(), "Connection Failed");
     }

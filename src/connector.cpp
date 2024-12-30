@@ -2,6 +2,7 @@
 #include <wx/string.h>
 #include <wx/fileconf.h>
 #include <thread>
+#include <wx/socket.h>
 
 Connector::Connector(Routecache *routecache, std::string plugin_dir, wxFileConfig *config) :
   wxThread(wxTHREAD_JOINABLE),
@@ -98,7 +99,7 @@ wxThread::ExitCode Connector::Entry() {
     config->Read("/Server/port", &port, 9900);
     config->Read("/Connection/min_reconnect_time", &min_reconnect_time, 100.0);
     config->Read("/Connection/max_reconnect_time", &max_reconnect_time, 600.0);
-    
+        
     socket = new Socket(
         std::string(server.ToUTF8()),
         port,

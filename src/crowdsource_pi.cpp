@@ -55,6 +55,7 @@
 #include "ODAPI.h"
 
 #include "wx/jsonwriter.h"
+#include <wx/socket.h>
 
 
 #ifndef DECL_EXP
@@ -199,6 +200,7 @@ crowdsource_pi::~crowdsource_pi()
 }
 int crowdsource_pi::Init(void)
 {
+    wxSocketBase::Initialize();
     AddLocaleCatalog( PLUGIN_CATALOG_NAME );
     m_parent_window = GetOCPNCanvasWindow();
     config = GetOCPNConfigObject();
@@ -251,6 +253,7 @@ void crowdsource_pi::LateInit(void)
 
 bool crowdsource_pi::DeInit(void)
 {
+    wxSocketBase::Shutdown();
     return true;
 }
 
