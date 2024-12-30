@@ -69,6 +69,7 @@ Routecache::Routecache(std::string migrations_dir, std::string db_name) {
 
 Routecache::~Routecache() {
     if (db != NULL) sqlite3_close(db);
+    db = NULL;
 }
 
 void Routecache::OpenDB() {

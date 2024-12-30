@@ -30,7 +30,27 @@ Connector::~Connector() {
     schema = nullptr;
 }
 
+AvroValueFromSchema Connector::ParseResponse(int reply_discriminant) {
+    AvroValueFromSchema container(*schema, *socket);
+    AvroValue message = container.Get("Message");
+    if(message.GetDiscriminant() != 1) {
+        throw std::runtime_error("Received non-response message");
+    }
+    AvroValue response = message.Get().Get("Response");
+    if (response.Get("id").GetInt() != callid) {
+        throw std::runtime_error("Received response with wrong callid");
+    }
+    AvroValue content = response.Get("Response");
+    if (content.GetDiscriminant() == 0) {
+        throw std::runtime_error(content.Get().Get("Error").Get("exception").GetString());
+    } else if (content.GetDiscriminant() != reply_discriminant) {
+        throw std::runtime_error("Received response for wrong method");
+    }
+    return container;
+}
+
 void Connector::Login() {
+    std::cerr << "Connector logging in\n";
     wxString api_key;
     config->Read("/Server/api_key", &api_key, "");
 
@@ -42,9 +62,11 @@ void Connector::Login() {
     
     value.Debug();
     socket->Send(value.Serialize(), 0);
+    ParseResponse(1);
 }
 
 void Connector::SendTracks() {
+    std::cerr << "Connector sending tracks\n";
     AvroValueFromSchema value(*schema);
     AvroValue call = value.Get("Message").SetCurrentBranch(0).Get("Call");
     call.Get("id").Set(++callid);
@@ -53,6 +75,7 @@ void Connector::SendTracks() {
     if (!routecache->Retrieve(submit)) return;
     value.Debug();
     socket->Send(value.Serialize(), 0);
+    ParseResponse(2);
     routecache->MarkAsSent(submit);
 }
 
@@ -84,5 +107,6 @@ wxThread::ExitCode Connector::Entry() {
             std::cerr << e.what() << " in Connector\n";
         }
     }
+    std::cerr << "Connector exiting\n";
     return 0;
 };

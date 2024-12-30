@@ -189,9 +189,13 @@ crowdsource_pi::crowdsource_pi(void *ppimgr)
 
 crowdsource_pi::~crowdsource_pi()
 {
-    if (cache) delete cache;
     if (connector) { connector->Delete(); delete connector; }
+    connector = nullptr;
     if (preferences_window) delete preferences_window;
+    preferences_window = nullptr;
+    // Delete the cache after the connector, or the connector thread could get stuck hanging on a dead mutex!
+    if (cache) delete cache;
+    cache = nullptr;
 }
 int crowdsource_pi::Init(void)
 {

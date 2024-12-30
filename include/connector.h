@@ -23,6 +23,7 @@ public:
         wxFileConfig *config);
     ~Connector();
     wxThread::ExitCode Entry() override;
+    AvroValueFromSchema ParseResponse(int reply_discriminant);
     void Login();
     void SendTracks();
 };

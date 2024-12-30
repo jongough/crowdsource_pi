@@ -13,8 +13,6 @@ AvroSchema::~AvroSchema() {
     avro_schema_decref(schema);
 }
 
-
-
 AvroMemoryWriter::AvroMemoryWriter(AvroValue& value) : value(value) {
     writer = avro_writer_memory(buffer, sizeof(buffer));
 
@@ -28,8 +26,30 @@ AvroMemoryWriter::~AvroMemoryWriter() {
 }
 
 
-AvroValueFromSchema::AvroValueFromSchema(AvroSchema &schema) : schema(schema) {
+AvroValueFromSchema::AvroValueFromSchema(AvroSchema& schema) : schema(schema) {
     avro_generic_value_new(schema.iface, &value);
+}
+
+AvroValueFromSchema::AvroValueFromSchema(AvroSchema& schema, Socket& socket) : schema(schema) {
+    avro_generic_value_new(schema.iface, &value);
+    while (!socket.TryCancel()) {
+        const std::vector<char>& raw_buffer = socket.GetBuffer();
+        if (raw_buffer.size() > 0) {
+            avro_reader_t reader = avro_reader_memory(raw_buffer.data(), raw_buffer.size());
+            if (avro_value_read(reader, &value) == 0) {
+                // How reliable is this? Is this guaranteed to be the same size as what was read?
+                size_t used_bytes;
+                avro_value_sizeof(&value, &used_bytes);
+                avro_reader_free(reader);
+                socket.ConsumeBytes(used_bytes);
+                return;
+            }
+            avro_reader_free(reader);
+        }
+        socket.ReadEnoughData(raw_buffer.size() + 1);
+        avro_value_reset(&value);
+    }
+    throw AvroException("Interrupted by thread termination");
 }
 
 AvroValueFromSchema::~AvroValueFromSchema() {

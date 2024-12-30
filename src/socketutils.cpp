@@ -1,5 +1,4 @@
 #include "socketutils.h"
-
 Socket::Socket(const std::string& ip, int port, int min_reconnect_time, int max_reconnect_time, CancelFunction cancel_function, ConnectFunction connect_function) :
   reconnect_time(0),
   ip(ip),
@@ -9,6 +8,14 @@ Socket::Socket(const std::string& ip, int port, int min_reconnect_time, int max_
   cancel_function(cancel_function),
   connect_function(connect_function) {
     sock = nullptr;
+}
+
+Socket::~Socket() {
+    if (sock) {
+        sock->Close();
+        delete sock;
+        sock = nullptr;
+    }
 }
 
 void Socket::ConnectionFailure(wxSocketError error, const std::string& attempt) {
@@ -42,13 +49,22 @@ void Socket::Connect() {
             slept += tosleep;
         }
     }
+
+    // If any exception is thrown from inside Connect that isn't from
+    // a ConnectionFailure(), we might have an old socket here that
+    // needs cleanup.
+    if (sock != nullptr) {
+        sock->Close();
+        delete sock;
+        sock = nullptr;
+    }
+    
     wxIPV4address serv_addr;
     serv_addr.Hostname(ip);
     serv_addr.Service(port);
 
     sock = new wxSocketClient();
-    sock->SetTimeout(10);
-
+    sock->SetTimeout(1);
     sock->Connect(serv_addr, false);
 
     slept = 0;
@@ -102,4 +118,60 @@ void Socket::WaitAndSendInitial(const std::string& data, int flags) {
             std::cerr << e.what() << "\n";
         }
     }
+}
+
+
+void Socket::ReadEnoughData(size_t size) {
+    int slept = 0;
+    int tosleep = 0;
+    sock->SetTimeout(0);
+    while ((buffer.size() < size) && (slept < 10000)) {
+        if (TryCancel()) {
+            ConnectionFailure(wxSOCKET_NOERROR, "Interrupted by thread termination");
+        }
+        char temp[4096];
+        sock->Read(temp, size - buffer.size());
+        slept += tosleep;
+        bool isError = sock->Error();
+        wxSocketError error = sock->LastError();
+        size_t bytes_read = sock->LastCount();
+
+        if (isError) {
+            if (error == wxSOCKET_TIMEDOUT) {
+                tosleep = 10000 - slept > 200 ? 200 : 10000 - slept;
+                continue;
+            } else {
+                ConnectionFailure(sock->LastError(), "Socket error while reading");
+            }
+        }
+
+        if (bytes_read == 0) {
+            ConnectionFailure(wxSOCKET_IOERR, "read 0 bytes from socket");
+        }
+
+        slept = 0;
+        buffer.insert(buffer.end(), temp, temp + bytes_read);
+    }
+    if (buffer.size() < size) {
+        ConnectionFailure(wxSOCKET_TIMEDOUT, "Did not read enough bytes from socket before timeout");
+    }
+}
+
+std::vector<char> Socket::RetrieveBytes(size_t size) {
+    if (buffer.size() < size) {
+        throw std::runtime_error("Not enough data in buffer");
+    }
+
+    std::vector<char> result(buffer.begin(), buffer.begin() + size);
+    buffer.erase(buffer.begin(), buffer.begin() + size);
+    return result;
+}
+
+const std::vector<char>& Socket::GetBuffer() const { return buffer; }
+
+void Socket::ConsumeBytes(size_t size) {
+    if (size > buffer.size()) {
+        throw std::runtime_error("Cannot consume more bytes than available");
+    }
+    buffer.erase(buffer.begin(), buffer.begin() + size);
 }

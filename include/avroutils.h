@@ -3,6 +3,7 @@
 
 #include <avro.h>
 #include <string>
+#include "socketutils.h"
 
 class AvroValue;
 
@@ -10,7 +11,6 @@ class AvroSchema {
 public:
     avro_schema_t schema;
     avro_value_iface_t *iface;
-    
     AvroSchema(std::string schema_json);
     ~AvroSchema();
 };
@@ -70,6 +70,7 @@ public:
     AvroSchema& schema;
 
     AvroValueFromSchema(AvroSchema& schema);
+    AvroValueFromSchema(AvroSchema& schema, Socket& socket);
     ~AvroValueFromSchema();
 };
 
