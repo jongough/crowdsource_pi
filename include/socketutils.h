@@ -25,6 +25,7 @@ public:
     Socket(const std::string& ip, int port, int min_reconnect_time, int max_reconnect_time, CancelFunction cancel_function = nullptr, ConnectFunction connect_function = nullptr);
     ~Socket();
     bool TryCancel();
+    void Close();
     void Connect();
     void EnsureConnection();
     void ConnectionFailure(wxSocketError error, const std::string&);

@@ -1,6 +1,7 @@
 #include "connector.h"
 #include <wx/string.h>
 #include <wx/fileconf.h>
+#include <thread>
 
 Connector::Connector(Routecache *routecache, std::string plugin_dir, wxFileConfig *config) :
   wxThread(wxTHREAD_JOINABLE),
@@ -9,6 +10,7 @@ Connector::Connector(Routecache *routecache, std::string plugin_dir, wxFileConfi
   socket(nullptr),
   schema(nullptr),
   callid(0) {
+      std::cerr << "Connector created in " << std::this_thread::get_id() << "\n";
       wxString slash(wxFileName::GetPathSeparator());
       wxString schema_file =
           wxString(plugin_dir)
@@ -24,6 +26,7 @@ Connector::Connector(Routecache *routecache, std::string plugin_dir, wxFileConfi
 }
 
 Connector::~Connector() {
+    std::cerr << "Connector destroyed in " << std::this_thread::get_id() << "\n";
     if (socket) delete socket;
     socket = nullptr;
     if (schema) delete schema;
@@ -31,6 +34,7 @@ Connector::~Connector() {
 }
 
 AvroValueFromSchema Connector::ParseResponse(int reply_discriminant) {
+    std::cerr << "Connector parsing response\n";
     AvroValueFromSchema container(*schema, *socket);
     AvroValue message = container.Get("Message");
     if(message.GetDiscriminant() != 1) {
@@ -46,6 +50,7 @@ AvroValueFromSchema Connector::ParseResponse(int reply_discriminant) {
     } else if (content.GetDiscriminant() != reply_discriminant) {
         throw std::runtime_error("Received response for wrong method");
     }
+    std::cerr << "Connector response parsed\n";
     return container;
 }
 
@@ -62,7 +67,9 @@ void Connector::Login() {
     
     value.Debug();
     socket->Send(value.Serialize(), 0);
+    std::cerr << "Send done, gonna parse response\n";
     ParseResponse(1);
+    std::cerr << "Response parsed\n";
 }
 
 void Connector::SendTracks() {
@@ -84,6 +91,9 @@ wxThread::ExitCode Connector::Entry() {
     long port;
     float min_reconnect_time;
     float max_reconnect_time;
+
+    std::cerr << "Connector running in " << std::this_thread::get_id() << " socket is nullptr: " << (socket == nullptr) << "\n";
+    
     config->Read("/Server/server", &server, "crowdsource.kahu.earth");
     config->Read("/Server/port", &port, 9900);
     config->Read("/Connection/min_reconnect_time", &min_reconnect_time, 100.0);
@@ -100,6 +110,7 @@ wxThread::ExitCode Connector::Entry() {
 
     while (!TestDestroy()) {
         try {
+            std::cerr << "Connector connecting...\n";
             socket->EnsureConnection();
             SendTracks();
             wxThread::Sleep(500);

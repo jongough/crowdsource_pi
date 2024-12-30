@@ -1,4 +1,6 @@
 #include "socketutils.h"
+#include <thread>
+
 Socket::Socket(const std::string& ip, int port, int min_reconnect_time, int max_reconnect_time, CancelFunction cancel_function, ConnectFunction connect_function) :
   reconnect_time(0),
   ip(ip),
@@ -6,24 +8,23 @@ Socket::Socket(const std::string& ip, int port, int min_reconnect_time, int max_
   min_reconnect_time(min_reconnect_time),
   max_reconnect_time(max_reconnect_time),
   cancel_function(cancel_function),
-  connect_function(connect_function) {
-    sock = nullptr;
-}
+  connect_function(connect_function),
+  sock(nullptr) { }
 
 Socket::~Socket() {
+    Close();
+}
+
+void Socket::Close() {
     if (sock) {
-        sock->Close();
+        std::cerr << "Deleting wxSocket " << sock << " in " << std::this_thread::get_id() << "\n";
         delete sock;
         sock = nullptr;
     }
 }
 
 void Socket::ConnectionFailure(wxSocketError error, const std::string& attempt) {
-    if (sock) {
-        sock->Close();
-        delete sock;
-        sock = nullptr;
-    }
+    Close();
     if (reconnect_time == 0) {
         reconnect_time = min_reconnect_time;
     } else if (reconnect_time < max_reconnect_time) {
@@ -53,17 +54,14 @@ void Socket::Connect() {
     // If any exception is thrown from inside Connect that isn't from
     // a ConnectionFailure(), we might have an old socket here that
     // needs cleanup.
-    if (sock != nullptr) {
-        sock->Close();
-        delete sock;
-        sock = nullptr;
-    }
+    Close();
     
     wxIPV4address serv_addr;
     serv_addr.Hostname(ip);
     serv_addr.Service(port);
 
     sock = new wxSocketClient();
+    std::cerr << "Created wxSocket " << sock << " in " << std::this_thread::get_id() << "\n";
     sock->SetTimeout(1);
     sock->Connect(serv_addr, false);
 
