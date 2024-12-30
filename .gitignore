@@ -5,3 +5,6 @@ temp
 tmp
 master.zip
 build
+.#*
+*~
+
