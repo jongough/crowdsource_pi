@@ -7,6 +7,8 @@ The communication protocol is based on Apache Avro and batches track points so t
 
 This plugin is designed to be used in conjunction with the [radar_pi](https://github.com/opencpn-radar-pi/radar_pi) radar plugin. Alternatively, it can use `$RATTM` and `$RATTL` NMEA messages originating from an extranl radar system.
 
+![Screenshot](screenshot.png)
+
 # Installation instructions
  
 * Connect a laptop to the same ethernet segment as your radar. Follow the instructions here for any network setup: https://github.com/opencpn-radar-pi/radar_pi/wiki
