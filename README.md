@@ -71,3 +71,8 @@ These steps are to test the capabilities and accuracy of the plugin
   - send us the VDR recording (vdr.txt) to compare to data we received from the plugin
   - send us the date & time of the start and end of your voyage
 * When back at shore, check out http://crowdsource.kahu.earth to see the tracks you collected
+
+## Server
+
+An example server written in Python is provided in the [server subdirectory](server). This server implements the full protocol, but just dumps all received tracks to disk in geojson format.
+It can be used as a simple shore based VDR, but mostly serves as an example base for anyone wanting to build a more elaborate server side setup.
