@@ -7,7 +7,25 @@ The communication protocol is based on Apache Avro and batches track points so t
 
 This plugin is designed to be used in conjunction with the [radar_pi](https://github.com/opencpn-radar-pi/radar_pi) radar plugin. Alternatively, it can use `$RATTM` and `$RATTL` NMEA messages originating from an extranl radar system.
 
-# Installation instructions
+![Screenshot](screenshot.png)
+
+Some limitations:
+* Only supports #RATTM (not $RATTL) NMEA sentences
+* Does not collect AIS data, only radar $RATTM sentences
+* Only compiled for Linux / debian on intel/amd PCs
+* Not published to the plugin app store - you have to load a file using the "Import plugin" button
+* The protocol is NOT encrypted
+* The protocol is NOT cryptographically signed
+
+Working features:
+* Reconnects if it loses internet connectivity
+* Uses exponential back off for reconnect, so as to not flood the local network with connection attempts
+* Caches received data until it has internet connectibity
+* Reports amount of unsent cached data in the preferences dialog
+* Reports connectivity status in the preferences dialog
+* Uses a basic authentication scheme using an API key
+
+## Installation instructions
  
 * Connect a laptop to the same ethernet segment as your radar. Follow the instructions here for any network setup: https://github.com/opencpn-radar-pi/radar_pi/wiki
 * Connect the laptop to the internet on board (this might be the same ethernet network, or wifi or a 3g modem)
