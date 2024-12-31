@@ -1,4 +1,4 @@
-# Crowdsource OpenCPN plugin
+# Crowdsource [OpenCPN](https://opencpn.org/) plugin
 
 Contribute AIS and ARPA targets from your vessel to crowdsourcing for marine safety!
 
