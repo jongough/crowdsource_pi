@@ -22,6 +22,7 @@ public:
     int max_reconnect_time;
     CancelFunction cancel_function;
     ConnectFunction connect_function;
+    std::string status;
     Socket(const std::string& ip, int port, int min_reconnect_time, int max_reconnect_time, CancelFunction cancel_function = nullptr, ConnectFunction connect_function = nullptr);
     ~Socket();
     bool TryCancel();

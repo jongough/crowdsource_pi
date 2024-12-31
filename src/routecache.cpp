@@ -160,8 +160,6 @@ void Routecache::RunMigration(int i, wxString name) {
      .step();
 }
 
-
-
 void Routecache::Insert(
     int target_id,
     double target_distance,
@@ -235,6 +233,37 @@ void Routecache::Insert(
      .step();
 }
 
+void Routecache::ConnectionStats(
+    long& unsent_datapoints,
+    long& unsent_tracks) {
+    std::lock_guard<std::mutex> guard(lock);
+
+    Query query1(db, R"(
+      select
+        count(*)
+      from
+        target_position
+      where       
+        not sent;
+      )");
+    query1.step();
+    unsent_datapoints = query1.get_int64(0);
+    
+    Query query2(db, R"(
+      select
+        count(*)
+      from
+        (select distinct
+           target_id
+         from
+           target_position
+         where
+           not sent
+        );
+    )");
+    query2.step();
+    unsent_tracks = query2.get_int64(0);
+}
 
 bool Routecache::Retrieve(AvroValue& route_message) {
     std::lock_guard<std::mutex> guard(lock);
@@ -258,8 +287,18 @@ bool Routecache::Retrieve(AvroValue& route_message) {
             target_position
           where
             sent is false
+            and target_id in (
+              select
+                target_id
+              from
+                target_position
+              group by 
+                target_id
+              having 
+                count(*) > 1
+            )
           order by
-            timestamp asc
+            timestamp ASC
           limit 1)
         and target.target_id = target_position.target_id
         and not target_position.sent

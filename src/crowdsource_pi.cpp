@@ -308,46 +308,80 @@ wxBitmap *crowdsource_pi::GetPlugInBitmap()
     return m_pdeficon;
 }
 
+void CrowdsourcePreferencesWindow::OnTimer(wxTimerEvent& event) {
+    try {
+        if (plugin.cache && plugin.connector) {
+            long unsent_datapoints_nr;
+            long unsent_tracks_nr;
+            plugin.cache->ConnectionStats(
+                unsent_datapoints_nr,
+                unsent_tracks_nr);
+
+            unsent_datapoints->SetLabel(
+                std::to_string(unsent_datapoints_nr));
+            unsent_tracks->SetLabel(
+                std::to_string(unsent_tracks_nr));
+
+            last_connection->SetLabel(
+                plugin.connector->last_connection.Format("%Y-%m-%d %H:%M:%S"));
+            transferred_data->SetLabel("<Not yet implemented>");
+            // Thread safety: We do not destroy the connector while
+            // inside the dialog, and so the socket is not destroyed either
+            // once created.
+            if (plugin.connector->socket) {
+                connection_status->SetLabel(plugin.connector->socket->status);
+            }
+        }
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << " while updating preferences dialog.\n";
+    }
+}
+
 void crowdsource_pi::ShowPreferencesDialog(wxWindow *parent) {
-    if (!preferences_window) {
-        preferences_window = new CrowdsourcePreferencesWindow(
-            parent, wxID_ANY, wxString("Crowdsource preferences"));
+    try {
+        if (!preferences_window) {
+            preferences_window = new CrowdsourcePreferencesWindow(
+                *this, parent, wxID_ANY, wxString("Crowdsource preferences"));
+        }
+
+        wxString server;
+        long port;
+        wxString api_key;
+        float min_reconnect_time;
+        float max_reconnect_time;
+        config->Read("/Server/server", &server, "crowdsource.kahu.earth");
+        config->Read("/Server/port", &port, 9900);
+        config->Read("/Server/api_key", &api_key, "");
+        config->Read("/Connection/min_reconnect_time", &min_reconnect_time, 100.0);
+        config->Read("/Connection/max_reconnect_time", &max_reconnect_time, 600.0);
+
+        preferences_window->server->SetValue(server.ToUTF8());
+        preferences_window->port->SetValue(std::to_string(port));
+        preferences_window->api_key->SetValue(api_key);
+        preferences_window->min_reconnect_time->SetValue(min_reconnect_time);
+        preferences_window->max_reconnect_time->SetValue(max_reconnect_time);
+
+        if (preferences_window->ShowModal() == wxID_SAVE) {
+            config->Write("/Server/server", preferences_window->server->GetValue());
+            config->Write("/Server/port", preferences_window->port->GetValue());
+            config->Write("/Server/api_key", preferences_window->api_key->GetValue());
+            config->Write("/Connection/min_reconnect_time", preferences_window->min_reconnect_time->GetValue());
+            config->Write("/Connection/max_reconnect_time", preferences_window->max_reconnect_time->GetValue());
+            config->Flush();
+
+            if (connector) { connector->Delete(); delete connector; }
+            connector = new Connector(
+                 cache,
+                 GetPluginDataDir("crowdsource_pi").ToStdString(),
+                 config);
+             connector->Run();
+        }
+        preferences_window->Destroy();
+        delete preferences_window;
+        preferences_window = nullptr;
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << " while updating preferences dialog.\n";
     }
-
-    wxString server;
-    long port;
-    wxString api_key;
-    float min_reconnect_time;
-    float max_reconnect_time;
-    config->Read("/Server/server", &server, "crowdsource.kahu.earth");
-    config->Read("/Server/port", &port, 9900);
-    config->Read("/Server/api_key", &api_key, "");
-    config->Read("/Connection/min_reconnect_time", &min_reconnect_time, 100.0);
-    config->Read("/Connection/max_reconnect_time", &max_reconnect_time, 600.0);
-
-    preferences_window->server->SetValue(server.ToUTF8());
-    preferences_window->port->SetValue(port);
-    preferences_window->api_key->SetValue(api_key);
-    preferences_window->min_reconnect_time->SetValue(min_reconnect_time);
-    preferences_window->max_reconnect_time->SetValue(max_reconnect_time);
-
-    if (preferences_window->ShowModal() == wxID_SAVE) {
-        config->Write("/Server/server", preferences_window->server->GetValue());
-        config->Write("/Server/port", preferences_window->port->GetValue());
-        config->Write("/Server/api_key", preferences_window->api_key->GetValue());
-        config->Write("/Connection/min_reconnect_time", preferences_window->min_reconnect_time->GetValue());
-        config->Write("/Connection/max_reconnect_time", preferences_window->max_reconnect_time->GetValue());
-        config->Flush();
-        
-        if (connector) { connector->Delete(); delete connector; }
-        connector = new Connector(
-             cache,
-             GetPluginDataDir("crowdsource_pi").ToStdString(),
-             config);
-    }
-    preferences_window->Destroy();
-    delete preferences_window;
-    preferences_window = nullptr;
 }
 
 void crowdsource_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)

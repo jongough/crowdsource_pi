@@ -35,6 +35,9 @@ public:
         double longitude,
         double target_latitude,
         double target_longitude);
+    void ConnectionStats(
+        long& unsent_datapoints,
+        long& unsent_tracks);
     bool Retrieve(AvroValue& route_message);
     void MarkAsSent(AvroValue& route_message);
 

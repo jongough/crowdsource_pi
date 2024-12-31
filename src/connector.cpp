@@ -10,7 +10,9 @@ Connector::Connector(Routecache *routecache, std::string plugin_dir, wxFileConfi
   config(config),
   socket(nullptr),
   schema(nullptr),
-  callid(0) {
+  callid(0),
+  last_connection(wxDateTime(1, wxDateTime::Jan, 1970, 0, 0, 0, 0)),
+  last_track_sent(wxDateTime(1, wxDateTime::Jan, 1970, 0, 0, 0, 0)) {
       std::cerr << "Connector created in " << std::this_thread::get_id() << "\n";
       wxString slash(wxFileName::GetPathSeparator());
       wxString schema_file =
@@ -71,6 +73,7 @@ void Connector::Login() {
     std::cerr << "Send done, gonna parse response\n";
     ParseResponse(1);
     std::cerr << "Response parsed\n";
+    last_connection = wxDateTime::Now();
 }
 
 void Connector::SendTracks() {
@@ -85,6 +88,7 @@ void Connector::SendTracks() {
     socket->Send(value.Serialize(), 0);
     ParseResponse(2);
     routecache->MarkAsSent(submit);
+    last_track_sent = wxDateTime::Now();
 }
 
 wxThread::ExitCode Connector::Entry() {

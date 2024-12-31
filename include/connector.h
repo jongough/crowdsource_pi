@@ -9,14 +9,15 @@
 #include "avroutils.h"
 
 class Connector : public wxThread {
-private:
+public:
     Routecache *routecache;
     wxFileConfig *config;
     Socket *socket;
     AvroSchema *schema;
     int callid;
-
-public:
+    wxDateTime last_connection;
+    wxDateTime last_track_sent;
+ 
     Connector(
         Routecache *routecache,
         std::string plugin_dir,

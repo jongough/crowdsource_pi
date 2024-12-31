@@ -36,11 +36,16 @@ private:
 protected:
     // begin wxGlade: PreferencesWindow::attributes
     wxTextCtrl* server;
-    wxSpinCtrl* port;
+    wxTextCtrl* port;
     wxTextCtrl* api_key;
     wxHyperlinkCtrl* hyperlink_1;
     wxSpinCtrlDouble* min_reconnect_time;
     wxSpinCtrlDouble* max_reconnect_time;
+    wxStaticText* last_connection;
+    wxStaticText* connection_status;
+    wxStaticText* unsent_datapoints;
+    wxStaticText* unsent_tracks;
+    wxStaticText* transferred_data;
     wxButton* button_SAVE;
     wxButton* button_CANCEL;
     // end wxGlade

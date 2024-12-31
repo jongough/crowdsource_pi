@@ -2,6 +2,7 @@
 #include <thread>
 
 Socket::Socket(const std::string& ip, int port, int min_reconnect_time, int max_reconnect_time, CancelFunction cancel_function, ConnectFunction connect_function) :
+  sock(nullptr),
   reconnect_time(0),
   ip(ip),
   port(port),
@@ -9,7 +10,7 @@ Socket::Socket(const std::string& ip, int port, int min_reconnect_time, int max_
   max_reconnect_time(max_reconnect_time),
   cancel_function(cancel_function),
   connect_function(connect_function),
-  sock(nullptr) { }
+  status("Not yet connected") { }
 
 Socket::~Socket() {
     Close();
@@ -30,7 +31,9 @@ void Socket::ConnectionFailure(wxSocketError error, const std::string& attempt) 
     } else if (reconnect_time < max_reconnect_time) {
         reconnect_time = reconnect_time * 2;
     }
-    throw SocketException(error, attempt);
+    SocketException exc(error, attempt);
+    status.assign(exc.what());
+    throw exc;
 }
 
 bool Socket::TryCancel() {
@@ -57,8 +60,8 @@ void Socket::Connect() {
     Close();
     
     wxIPV4address serv_addr;
-    serv_addr.Hostname(ip);
-    serv_addr.Service(port);
+    if (!serv_addr.Hostname(ip)) ConnectionFailure(wxSOCKET_INVADDR, "Invalid hostname/IP");
+    if (!serv_addr.Service(port)) ConnectionFailure(wxSOCKET_INVADDR, "Invalid port number");
 
     sock = new wxSocketClient(wxSOCKET_BLOCK);
     std::cerr << "Created wxSocket " << sock << " in " << std::this_thread::get_id() << "\n";
@@ -76,8 +79,12 @@ void Socket::Connect() {
         ConnectionFailure(sock->LastError(), "Connection Failed");
     }
 
-    if (connect_function) connect_function();
+    status.assign("Connected");
     
+    if (connect_function) connect_function();
+
+    status.assign("Logged in");
+
     reconnect_time = min_reconnect_time;
 }
 
@@ -87,6 +94,7 @@ void Socket::EnsureConnection() {
             Connect();
         } catch (const std::exception& e) {
             std::cerr << e.what() << "\n";
+            if (TryCancel()) throw e;
         }
     }
 }

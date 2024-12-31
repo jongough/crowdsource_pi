@@ -164,10 +164,28 @@ class crowdsource_pi;
 
 class CrowdsourcePreferencesWindow : public PreferencesWindow {
 public:
-    CrowdsourcePreferencesWindow(wxWindow* parent, wxWindowID id, const wxString& title,
-                                 const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-                                 long style = wxDEFAULT_DIALOG_STYLE)
-     : PreferencesWindow(parent, id, title, pos, size, style) {}
+    CrowdsourcePreferencesWindow(
+        crowdsource_pi& plugin,
+        wxWindow* parent, wxWindowID id, const wxString& title,
+        const wxPoint& pos = wxDefaultPosition,
+        const wxSize& size = wxDefaultSize,
+        long style = wxDEFAULT_DIALOG_STYLE)
+     : PreferencesWindow(parent, id, title, pos, size, style),
+       plugin(plugin),
+       timer(this) {
+
+        Bind(wxEVT_TIMER, &CrowdsourcePreferencesWindow::OnTimer, this);
+
+        timer.Start(500);
+    };
+    ~CrowdsourcePreferencesWindow() {
+        timer.Stop();
+    };
+
+    void OnTimer(wxTimerEvent& event);
+
+    crowdsource_pi& plugin;
+    wxTimer timer;
 protected:
     friend class crowdsource_pi;
 };
@@ -209,7 +227,6 @@ public:
 
     void Polar2Pos(double, double, double&, double&);
 
-private:
     double latitude;
     double longitude;
     double cog;
