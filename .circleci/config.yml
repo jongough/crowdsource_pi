@@ -88,8 +88,7 @@ commands:
                 condition: <<pipeline.parameters.run_workflow_deploy>>
                 steps:
                 - when:
-                    condition: <<parameters.install_python>>
-                    steps:
+                    condition: <<parameters.install_python>>                    steps:
                     - run: sudo apt install -y python3-pip
                     - run: python3 -m pip install cloudsmith-cli
                 - when:
@@ -117,6 +116,7 @@ jobs:
         - OCPN_TARGET:  android-arm64
         - DEPLOY_USE_ORB: true
         - INSTALL_PYTHON: true
+        - GIT_SUBMODULE_STRATEGY: recursive
         steps:
         - checkout
         - run: chmod a+x ci/*.sh
@@ -131,6 +131,7 @@ jobs:
         - OCPN_TARGET:  android-armhf
         - DEPLOY_USE_ORB: true
         - INSTALL_PYTHON: true
+        - GIT_SUBMODULE_STRATEGY: recursive
         steps:
         - checkout
         - run: chmod a+x ci/*.sh
@@ -145,6 +146,7 @@ jobs:
         - CLOUDSMITH_PKG_EXT: pkg
         - WX_VER: "32"
         - DEPLOY_USE_ORB: false
+        - GIT_SUBMODULE_STRATEGY: recursive
         steps:
         - checkout
         - run: chmod a+x ci/*.sh
@@ -161,6 +163,7 @@ jobs:
             WX_VER: 32
             DEPLOY_USE_ORB: false
             INSTALL_PYTHON: false
+            GIT_SUBMODULE_STRATEGY: recursive
         steps:
         - checkout
         - run: sudo chmod go+w /usr/local
@@ -194,6 +197,7 @@ jobs:
         - MSVC_VERSION: 2022
         - WX_VER: 32
         - DEPLOY_USE_ORB: false
+        - GIT_SUBMODULE_STRATEGY: recursive
         steps:
         - checkout
         - run:
@@ -213,6 +217,7 @@ jobs:
         - CLOUDSMITH_PKG_EXT: gz
         - SDK_VER: 22.08
         - DEPLOY_USE_ORB: true
+        - GIT_SUBMODULE_STRATEGY: recursive
         steps:
         - checkout
         - run: chmod a+x ci/*.sh
@@ -230,6 +235,7 @@ jobs:
         - CLOUDSMITH_PKG_EXT: gz
         - SDK_VER: 22.08
         - DEPLOY_USE_ORB: true
+        - GIT_SUBMODULE_STRATEGY: recursive
         steps:
         - checkout
         - run: chmod a+x ci/*.sh
@@ -248,6 +254,7 @@ jobs:
         - CLOUDSMITH_PKG_EXT: gz
         - SDK_VER: 24.08
         - DEPLOY_USE_ORB: true
+        - GIT_SUBMODULE_STRATEGY: recursive
         steps:
         - checkout
         - run: chmod a+x ci/*.sh
@@ -265,6 +272,7 @@ jobs:
         - CLOUDSMITH_PKG_EXT: gz
         - SDK_VER: 24.08
         - DEPLOY_USE_ORB: true
+        - GIT_SUBMODULE_STRATEGY: recursive
         steps:
         - checkout
         - run: chmod a+x ci/*.sh
@@ -284,6 +292,7 @@ jobs:
         - WX_VER: 32
         - BUILD_GTK3: true
         - DEPLOY_USE_ORB: true
+        - GIT_SUBMODULE_STRATEGY: recursive
         steps:
         - checkout
         - run: chmod a+x ./ci/*.sh
@@ -303,6 +312,7 @@ jobs:
         - WX_VER: 32
         - BUILD_GTK3: true
         - DEPLOY_USE_ORB: true
+        - GIT_SUBMODULE_STRATEGY: recursive
         steps:
         - checkout
         - run: chmod a+x ./ci/*.sh
@@ -321,6 +331,7 @@ jobs:
         - DEPLOY_USE_ORB: true
         - BUILD_ENV=debian
         - DOCKER_IMAGE=debian:bookworm
+        - GIT_SUBMODULE_STRATEGY: recursive
         steps:
         - checkout
         - run: chmod a+x ci/*.sh
@@ -339,6 +350,7 @@ jobs:
         - BUILD_ENV=debian
         - BUILD_GTK3: true
         - DEPLOY_USE_ORB: true
+        - GIT_SUBMODULE_STRATEGY: recursive
         steps:
         - checkout
         - run: chmod a+x ./ci/*.sh
@@ -357,6 +369,7 @@ jobs:
         - BUILD_ENV=debian
         - BUILD_GTK3: true
         - DEPLOY_USE_ORB: true
+        - GIT_SUBMODULE_STRATEGY: recursive
         steps:
         - checkout
         - run: chmod a+x ./ci/*.sh
@@ -372,6 +385,7 @@ jobs:
         - BUILD_GTK3: true
         - DEPLOY_USE_ORB: true
         - BUILD_ENV=debian
+        - GIT_SUBMODULE_STRATEGY: recursive
         steps:
         - checkout
         - run: >
@@ -394,6 +408,7 @@ jobs:
         - OCPN_TARGET: jammy
         - DEPLOY_USE_ORB: true
         - BUILD_ENV=ubuntu
+        - GIT_SUBMODULE_STRATEGY: recursive
         steps:
         - checkout
         - run: >
@@ -417,6 +432,7 @@ jobs:
         - CLOUDSMITH_PKG_EXT: pkg
         - WX_VER: 315
         - DEPLOY_USE_ORB: false
+        - GIT_SUBMODULE_STRATEGY: recursive
         steps:
         - checkout
         - run: chmod a+x ci/*.sh
@@ -436,6 +452,7 @@ jobs:
         - MSVC_VERSION: 2022
         - WX_VER: 31
         - DEPLOY_USE_ORB: false
+        - GIT_SUBMODULE_STRATEGY: recursive
         steps:
         - checkout
         - run:
