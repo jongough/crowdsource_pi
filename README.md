@@ -1,15 +1,15 @@
-# Crowdsource OpenCPN plugin
+# Crowdsource [OpenCPN](https://opencpn.org/) plugin
 
 Contribute AIS and ARPA targets from your vessel to crowdsourcing for marine safety!
 
 This plugin lets you upload AIS and radar ARPA targets (or any NMEA) to an internet server. Upload can be continuous, over intermittent internet, or scheduled, and tracks can be downsampled to fit your bandwidth.
-The communication protocol is based on Apache Avro and batches track points so that the overhead for each point above timestamp and lat/lon is low, meaning it is designed to be as bandwidth conservative as possible.
+The communication protocol is based on [Apache Avro](https://avro.apache.org/) and batches track points so that the overhead for each point above timestamp and lat/lon is low, meaning it is designed to be as bandwidth conservative as possible.
 
-This plugin is designed to be used in conjunction with the [radar_pi](https://github.com/opencpn-radar-pi/radar_pi) radar plugin. Alternatively, it can use `$RATTM` and `$RATTL` NMEA messages originating from an extranl radar system.
+This plugin is designed to be used in conjunction with the [radar_pi](https://github.com/opencpn-radar-pi/radar_pi) radar plugin. Alternatively, it can use [`$RATTM`](https://gpsd.gitlab.io/gpsd/NMEA.html#_ttm_tracked_target_message) and [`$RATTL`](https://gpsd.gitlab.io/gpsd/NMEA.html#_tll_target_latitude_and_longitude) NMEA messages originating from an external radar system.
 
 ![Screenshot](screenshot.png)
 
-Some limitations:
+Some limitations of the current beta version:
 * Only supports #RATTM (not $RATTL) NMEA sentences
 * Does not collect AIS data, only radar $RATTM sentences
 * Only compiled for Linux / debian on intel/amd PCs
@@ -71,3 +71,8 @@ These steps are to test the capabilities and accuracy of the plugin
   - send us the VDR recording (vdr.txt) to compare to data we received from the plugin
   - send us the date & time of the start and end of your voyage
 * When back at shore, check out http://crowdsource.kahu.earth to see the tracks you collected
+
+## Server
+
+An example server written in Python is provided in the [server subdirectory](server). This server implements the full protocol, but just dumps all received tracks to disk in geojson format.
+It can be used as a simple shore based VDR, but mostly serves as an example base for anyone wanting to build a more elaborate server side setup.
