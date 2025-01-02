@@ -34,7 +34,7 @@ fi
 
 pwd
 
-git submodule update --init opencpn-libs
+git submodule update --init
 
 sudo mk-build-deps --install ./ci/control
 

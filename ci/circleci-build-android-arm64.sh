@@ -9,7 +9,7 @@ set -xe
 
 pwd
 
-git submodule update --init opencpn-libs
+git submodule update --init
 
 ls -la
 
