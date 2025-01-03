@@ -6,6 +6,7 @@
 #include <wx/utils.h> 
 #include <stdexcept>
 #include <string.h>
+#include <functional>
 
 typedef std::function<bool()> CancelFunction;
 typedef std::function<void()> ConnectFunction;
