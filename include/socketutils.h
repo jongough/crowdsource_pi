@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <string.h>
 #include <functional>
+#include <vector>
 
 typedef std::function<bool()> CancelFunction;
 typedef std::function<void()> ConnectFunction;
