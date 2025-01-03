@@ -188,6 +188,12 @@ add_definitions(-DPLUGIN_USE_SVG)
 
 # ----- Section above - Add your project SET(SRCS and SET(HDRS  etc.
 
+if(WIN32)
+    set(LIBEXT "lib")
+else()
+    set(LIBEXT "a")
+endif()
+
 
 ExternalProject_Add(zlib
     PREFIX ${CMAKE_BINARY_DIR}/zlib
@@ -197,7 +203,9 @@ ExternalProject_Add(zlib
         -DCMAKE_CXX_FLAGS="-fPIC"
         -DCMAKE_C_FLAGS="-fPIC"
         -DBUILD_SHARED_LIBS=OFF
-    INSTALL_COMMAND /bin/bash -c "cp ${CMAKE_BINARY_DIR}/zlib/src/zlib-build/libz.a ${CMAKE_BINARY_DIR}"
+    INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
+        "${CMAKE_BINARY_DIR}/zlib/src/zlib-build/libz.${LIBEXT}
+        "${CMAKE_BINARY_DIR}/libz.${LIBEXT}"
     BUILD_ALWAYS TRUE
 )
 ExternalProject_Add(jansson
@@ -208,7 +216,9 @@ ExternalProject_Add(jansson
         -DCMAKE_CXX_FLAGS="-fPIC"
         -DCMAKE_C_FLAGS="-fPIC"
         -DBUILD_SHARED_LIBS=OFF
-    INSTALL_COMMAND /bin/bash -c "cp ${CMAKE_BINARY_DIR}/jansson/src/jansson-build/lib/libjansson.a ${CMAKE_BINARY_DIR}"
+    INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
+        "${CMAKE_BINARY_DIR}/jansson/src/jansson-build/lib/libjansson.${LIBEXT}"
+        "${CMAKE_BINARY_DIR}/libjansson.${LIBEXT}"
     BUILD_ALWAYS TRUE
 )
 ExternalProject_Add(liblzma
@@ -216,7 +226,11 @@ ExternalProject_Add(liblzma
     SOURCE_DIR ${CMAKE_SOURCE_DIR}/libs/liblzma
     CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR}/liblzma
     BUILD_COMMAND make -j
-    INSTALL_COMMAND /bin/bash -c "make install; cp ${CMAKE_BINARY_DIR}/liblzma/lib/liblzma.a ${CMAKE_BINARY_DIR}"
+    INSTALL_COMMAND
+        ${CMAKE_COMMAND} --build <BINARY_DIR> --target install &&
+        ${CMAKE_COMMAND} -E copy
+            <BINARY_DIR>/liblzma/lib/liblzma.${LIBEXT}
+            ${CMAKE_BINARY_DIR}/liblzma.${LIBEXT}
     BUILD_IN_SOURCE 1
     BUILD_ALWAYS TRUE
 )
@@ -226,20 +240,20 @@ ExternalProject_Add(avro
     CMAKE_ARGS
         -DCMAKE_LIBRARY_PATH=${CMAKE_BINARY_DIR}
         -DJANSSON_LIBRARY_DIRS=${CMAKE_BINARY_DIR}
-        -DJANSSON_LIBRARIES=${CMAKE_BINARY_DIR}/libjansson.a
+        -DJANSSON_LIBRARIES=${CMAKE_BINARY_DIR}/libjansson.${LIBEXT}
         -DJANSSON_INCLUDE_DIRS=${CMAKE_BINARY_DIR}/jansson/src/jansson-build/include/
         -DJANSSON_FOUND=True
         -DCMAKE_EXE_LINKER_FLAGS="-static"
         -DBUILD_SHARED_LIBS=OFF
     BUILD_COMMAND make VERBOSE=1
-    INSTALL_COMMAND /bin/bash -c "cp ${CMAKE_BINARY_DIR}/avro/src/avro-build/src/libavro.a ${CMAKE_BINARY_DIR}"
+    INSTALL_COMMAND /bin/bash -c "cp ${CMAKE_BINARY_DIR}/avro/src/avro-build/src/libavro.${LIBEXT} ${CMAKE_BINARY_DIR}"
     BUILD_ALWAYS TRUE
 )
 include_directories("${CMAKE_SOURCE_DIR}/libs/avro/lang/c/src")
-target_link_libraries(${PACKAGE_NAME} "${CMAKE_BINARY_DIR}/libavro.a")
+target_link_libraries(${PACKAGE_NAME} "${CMAKE_BINARY_DIR}/libavro.${LIBEXT}")
 # Include dependencies of libarvro directly, or the linker will be to stupid to not leave dangling symbols pointing to them
-target_link_libraries(${PACKAGE_NAME} "${CMAKE_BINARY_DIR}/libjansson.a")
-target_link_libraries(${PACKAGE_NAME} "${CMAKE_BINARY_DIR}/libz.a")
+target_link_libraries(${PACKAGE_NAME} "${CMAKE_BINARY_DIR}/libjansson.${LIBEXT}")
+target_link_libraries(${PACKAGE_NAME} "${CMAKE_BINARY_DIR}/libz.${LIBEXT}")
 add_dependencies(${PACKAGE_NAME} avro)
 add_dependencies(avro zlib)
 add_dependencies(avro jansson)
