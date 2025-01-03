@@ -326,6 +326,9 @@ if (NOT OCPN_FLATPAK_CONFIG)
   add_subdirectory(opencpn-libs/jsonlib)
   target_link_libraries(${PACKAGE_NAME} ocpn::jsonlib)
 
+  add_subdirectory(opencpn-libs/sqlite3)
+  target_link_libraries(${PACKAGE_NAME} ocpn::sqlite3)
+
   add_subdirectory(opencpn-libs/wxJSON)
   target_link_libraries(${PACKAGE_NAME} ocpn::wxjson)
 
