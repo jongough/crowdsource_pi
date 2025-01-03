@@ -318,7 +318,7 @@ bool Routecache::Retrieve(AvroValue& route_message) {
         if (isfirst) {
             route_message.Get("uuid").SetCurrentBranch(1).Set(query.get_string(0));
             start = query.get_double(2);
-            route_message.Get("start").Set((long) start);
+            route_message.Get("start").Set((int64_t) start);
             isfirst = false;
         }
         AvroValue position = linestring.Append();
