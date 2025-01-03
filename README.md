@@ -76,3 +76,18 @@ These steps are to test the capabilities and accuracy of the plugin
 
 An example server written in Python is provided in the [server subdirectory](server). This server implements the full protocol, but just dumps all received tracks to disk in geojson format.
 It can be used as a simple shore based VDR, but mostly serves as an example base for anyone wanting to build a more elaborate server side setup.
+
+
+## Build instructions
+
+```
+apt install build-essential gcc g++ cmake libwxgtk3.2-dev gettext libbz2-dev zlib1g-dev libsqlite3-dev
+```
+
+```
+mkdir build; cd build; cmake ..; make package; bash cloudsmith-upload.sh
+```
+
+(Note that cloudsmith-upload.sh actually modifies the files, and is
+necessary to generate the final package. On a local build, it won't
+actually upload anything)

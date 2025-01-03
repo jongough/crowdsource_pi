@@ -227,6 +227,8 @@ ExternalProject_Add(avro
         -DCMAKE_LIBRARY_PATH=${CMAKE_BINARY_DIR}
         -DJANSSON_LIBRARY_DIRS=${CMAKE_BINARY_DIR}
         -DJANSSON_LIBRARIES=${CMAKE_BINARY_DIR}/libjansson.a
+        -DJANSSON_INCLUDE_DIRS=${CMAKE_BINARY_DIR}/jansson/src/jansson-build/include/
+        -DJANSSON_FOUND=True
         -DCMAKE_EXE_LINKER_FLAGS="-static"
         -DBUILD_SHARED_LIBS=OFF
     BUILD_COMMAND make VERBOSE=1
