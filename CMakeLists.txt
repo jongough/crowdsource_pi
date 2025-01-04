@@ -204,7 +204,7 @@ ExternalProject_Add(zlib
         -DCMAKE_C_FLAGS="-fPIC"
         -DBUILD_SHARED_LIBS=OFF
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
-        "${CMAKE_BINARY_DIR}/zlib/src/zlib-build/libz.${LIBEXT}
+        "${CMAKE_BINARY_DIR}/zlib/src/zlib-build/libz.${LIBEXT}"
         "${CMAKE_BINARY_DIR}/libz.${LIBEXT}"
     BUILD_ALWAYS TRUE
 )
@@ -229,8 +229,8 @@ ExternalProject_Add(liblzma
     INSTALL_COMMAND
         ${CMAKE_COMMAND} --build <BINARY_DIR> --target install &&
         ${CMAKE_COMMAND} -E copy
-            <BINARY_DIR>/liblzma/lib/liblzma.${LIBEXT}
-            ${CMAKE_BINARY_DIR}/liblzma.${LIBEXT}
+            "${CMAKE_BINARY_DIR}/liblzma/lib/liblzma.${LIBEXT}"
+            "${CMAKE_BINARY_DIR}/liblzma.${LIBEXT}"
     BUILD_IN_SOURCE 1
     BUILD_ALWAYS TRUE
 )
@@ -246,7 +246,10 @@ ExternalProject_Add(avro
         -DCMAKE_EXE_LINKER_FLAGS="-static"
         -DBUILD_SHARED_LIBS=OFF
     BUILD_COMMAND make VERBOSE=1
-    INSTALL_COMMAND /bin/bash -c "cp ${CMAKE_BINARY_DIR}/avro/src/avro-build/src/libavro.${LIBEXT} ${CMAKE_BINARY_DIR}"
+    INSTALL_COMMAND
+        ${CMAKE_COMMAND} -E copy
+            "${CMAKE_BINARY_DIR}/avro/src/avro-build/src/libavro.${LIBEXT}"
+            "${CMAKE_BINARY_DIR}/libavro.${LIBEXT}"
     BUILD_ALWAYS TRUE
 )
 include_directories("${CMAKE_SOURCE_DIR}/libs/avro/lang/c/src")
