@@ -227,7 +227,7 @@ ExternalProject_Add(liblzma
     CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR}/liblzma
     BUILD_COMMAND make -j
     INSTALL_COMMAND
-        ${CMAKE_COMMAND} --build <BINARY_DIR> --target install &&
+        make -C ${CMAKE_BINARY_DIR}/liblzma/src/liblzma-build install &&
         ${CMAKE_COMMAND} -E copy
             "${CMAKE_BINARY_DIR}/liblzma/lib/liblzma.${LIBEXT}"
             "${CMAKE_BINARY_DIR}/liblzma.${LIBEXT}"
