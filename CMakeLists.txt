@@ -190,7 +190,7 @@ add_definitions(-DPLUGIN_USE_SVG)
 
 if(WIN32)
     set(LIBPREFIX "")
-    set(LIBEXT "static.lib")
+    set(LIBEXT "libstatic.lib")
     set(LIBDIR "/RelWithDebInfo")
 else()
     set(LIBPREFIX "lib")
