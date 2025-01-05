@@ -245,8 +245,8 @@ ExternalProject_Add(liblzma
 )
 if(WIN32)
     set(AVRO_PLATFORM_FLAGS
-        -DCMAKE_C_FLAGS=-DHAVE_STDINT_H
-        -DCMAKE_CXX_FLAGS=-DHAVE_STDINT_H
+        -DCMAKE_C_FLAGS="-D_MSC_STDINT_H_ -D_MSC_INTTYPES_H_"
+        -DCMAKE_CXX_FLAGS="-D_MSC_STDINT_H_ -D_MSC_INTTYPES_H_"
     )
 else()
     set(AVRO_PLATFORM_FLAGS "")
