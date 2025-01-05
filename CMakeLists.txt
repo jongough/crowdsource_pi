@@ -192,14 +192,17 @@ if(WIN32)
     set(LIBPREFIX "")
     set(LIBEXT "libstatic.lib")
     set(LIBDIR "/RelWithDebInfo")
+    set(ZLIB "zlibstatic.lib")
     set(LZMALIB "lzma.lib")
+    set(JANSSONLIB "jansson.lib")
 else()
     set(LIBPREFIX "lib")
     set(LIBEXT ".a")
     set(LIBDIR "")
-    set(LZMALIB "${LIBPREFIX}lzma${LIBEXT}")
+    set(ZLIB "libz.a")
+    set(LZMALIB "liblzma.a")
+    set(JANSSONLIB "libjansson.a")
 endif()
-
 
 ExternalProject_Add(zlib
     PREFIX ${CMAKE_BINARY_DIR}/zlib
@@ -210,8 +213,8 @@ ExternalProject_Add(zlib
         -DCMAKE_C_FLAGS="-fPIC"
         -DBUILD_SHARED_LIBS=OFF
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
-        "${CMAKE_BINARY_DIR}/zlib/src/zlib-build${LIBDIR}/${LIBPREFIX}z${LIBEXT}"
-        "${CMAKE_BINARY_DIR}/${LIBPREFIX}z${LIBEXT}"
+        "${CMAKE_BINARY_DIR}/zlib/src/zlib-build${LIBDIR}/${ZLIB}"
+        "${CMAKE_BINARY_DIR}/${ZLIB}"
     BUILD_ALWAYS TRUE
 )
 ExternalProject_Add(jansson
@@ -223,8 +226,8 @@ ExternalProject_Add(jansson
         -DCMAKE_C_FLAGS="-fPIC"
         -DBUILD_SHARED_LIBS=OFF
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
-        "${CMAKE_BINARY_DIR}/jansson/src/jansson-build/lib${LIBDIR}/${LIBPREFIX}jansson${LIBEXT}"
-        "${CMAKE_BINARY_DIR}/${LIBPREFIX}jansson${LIBEXT}"
+        "${CMAKE_BINARY_DIR}/jansson/src/jansson-build/lib${LIBDIR}/${JANSSONLIB}"
+        "${CMAKE_BINARY_DIR}/${JANSSONLIB}"
     BUILD_ALWAYS TRUE
 )
 ExternalProject_Add(liblzma
