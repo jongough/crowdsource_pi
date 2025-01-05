@@ -254,7 +254,6 @@ ExternalProject_Add(avro
         -DJANSSON_FOUND=True
         -DCMAKE_EXE_LINKER_FLAGS="-static"
         -DBUILD_SHARED_LIBS=OFF
-    BUILD_COMMAND make VERBOSE=1
     INSTALL_COMMAND
         ${CMAKE_COMMAND} -E copy
             "${CMAKE_BINARY_DIR}/avro/src/avro-build/src${LIBDIR}/${LIBPREFIX}avro${LIBEXT}"
