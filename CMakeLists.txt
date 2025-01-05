@@ -243,6 +243,14 @@ ExternalProject_Add(liblzma
         "${CMAKE_BINARY_DIR}/${LZMALIB}"
     BUILD_ALWAYS TRUE
 )
+if(WIN32)
+    set(AVRO_PLATFORM_FLAGS
+        -DCMAKE_C_FLAGS=-DHAVE_STDINT_H
+        -DCMAKE_CXX_FLAGS=-DHAVE_STDINT_H
+    )
+else()
+    set(AVRO_PLATFORM_FLAGS "")
+endif()
 ExternalProject_Add(avro
     PREFIX ${CMAKE_BINARY_DIR}/avro
     SOURCE_DIR ${CMAKE_SOURCE_DIR}/libs/avro/lang/c
@@ -254,6 +262,7 @@ ExternalProject_Add(avro
         -DJANSSON_FOUND=True
         -DCMAKE_EXE_LINKER_FLAGS="-static"
         -DBUILD_SHARED_LIBS=OFF
+        ${AVRO_PLATFORM_FLAGS}
     INSTALL_COMMAND
         ${CMAKE_COMMAND} -E copy
             "${CMAKE_BINARY_DIR}/avro/src/avro-build/src${LIBDIR}/${LIBPREFIX}avro${LIBEXT}"
