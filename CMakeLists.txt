@@ -225,6 +225,15 @@ ExternalProject_Add(jansson
         "${CMAKE_BINARY_DIR}/${LIBPREFIX}jansson${LIBEXT}"
     BUILD_ALWAYS TRUE
 )
+
+if(WIN32)
+ExternalProject_Add(liblzma
+    SOURCE_DIR ${CMAKE_SOURCE_DIR}/libs/liblzma/windows/vs2017/
+    CMAKE_GENERATOR ${CMAKE_GENERATOR}
+    CMAKE_ARGS -DCMAKE_BUILD_TYPE=$<CONFIG>
+    BUILD_ALWAYS TRUE
+)
+else()
 ExternalProject_Add(liblzma
     PREFIX ${CMAKE_BINARY_DIR}/liblzma
     SOURCE_DIR ${CMAKE_SOURCE_DIR}/libs/liblzma
@@ -238,6 +247,8 @@ ExternalProject_Add(liblzma
     BUILD_IN_SOURCE 1
     BUILD_ALWAYS TRUE
 )
+endif()
+
 ExternalProject_Add(avro
     PREFIX ${CMAKE_BINARY_DIR}/avro
     SOURCE_DIR ${CMAKE_SOURCE_DIR}/libs/avro/lang/c
