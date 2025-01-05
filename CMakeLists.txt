@@ -192,10 +192,12 @@ if(WIN32)
     set(LIBPREFIX "")
     set(LIBEXT "libstatic.lib")
     set(LIBDIR "/RelWithDebInfo")
+    set(LZMALIB "lzma.lib")
 else()
     set(LIBPREFIX "lib")
     set(LIBEXT ".a")
     set(LIBDIR "")
+    set(LZMALIB "${LIBPREFIX}lzma${LIBEXT}")
 endif()
 
 
@@ -234,8 +236,8 @@ ExternalProject_Add(liblzma
         -DCMAKE_C_FLAGS="-fPIC"
         -DBUILD_SHARED_LIBS=OFF
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
-        "${CMAKE_BINARY_DIR}/liblzma/src/liblzma-build${LIBDIR}/${LIBPREFIX}lzma${LIBEXT}"
-        "${CMAKE_BINARY_DIR}/${LIBPREFIX}liblzma${LIBEXT}"
+        "${CMAKE_BINARY_DIR}/liblzma/src/liblzma-build${LIBDIR}/${LZMALIB}"
+        "${CMAKE_BINARY_DIR}/${LZMALIB}"
     BUILD_ALWAYS TRUE
 )
 ExternalProject_Add(avro
