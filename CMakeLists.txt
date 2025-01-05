@@ -225,30 +225,19 @@ ExternalProject_Add(jansson
         "${CMAKE_BINARY_DIR}/${LIBPREFIX}jansson${LIBEXT}"
     BUILD_ALWAYS TRUE
 )
-
-if(WIN32)
-ExternalProject_Add(liblzma
-    SOURCE_DIR ${CMAKE_SOURCE_DIR}/libs/liblzma/windows/vs2017/
-    CMAKE_GENERATOR ${CMAKE_GENERATOR}
-    CMAKE_ARGS -DCMAKE_BUILD_TYPE=$<CONFIG>
-    BUILD_ALWAYS TRUE
-)
-else()
 ExternalProject_Add(liblzma
     PREFIX ${CMAKE_BINARY_DIR}/liblzma
     SOURCE_DIR ${CMAKE_SOURCE_DIR}/libs/liblzma
-    CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR}/liblzma
-    BUILD_COMMAND make -j
-    INSTALL_COMMAND
-        make install &&
-        ${CMAKE_COMMAND} -E copy
-            "${CMAKE_BINARY_DIR}/liblzma/lib${LIBDIR}/${LIBPREFIX}lzma${LIBEXT}"
-            "${CMAKE_BINARY_DIR}/${LIBPREFIX}lzma${LIBEXT}"
-    BUILD_IN_SOURCE 1
+    CMAKE_ARGS
+        -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+        -DCMAKE_CXX_FLAGS="-fPIC"
+        -DCMAKE_C_FLAGS="-fPIC"
+        -DBUILD_SHARED_LIBS=OFF
+    INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
+        "${CMAKE_BINARY_DIR}/liblzma/src/liblzma-build${LIBDIR}/${LIBPREFIX}lzma${LIBEXT}"
+        "${CMAKE_BINARY_DIR}/${LIBPREFIX}liblzma${LIBEXT}"
     BUILD_ALWAYS TRUE
 )
-endif()
-
 ExternalProject_Add(avro
     PREFIX ${CMAKE_BINARY_DIR}/avro
     SOURCE_DIR ${CMAKE_SOURCE_DIR}/libs/avro/lang/c
