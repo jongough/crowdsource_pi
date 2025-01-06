@@ -254,7 +254,7 @@ if(WIN32)
         -Dssize_t=ptrdiff_t
     )
 else()
-    set(AVRO_PLATFORM_FLAGS "")
+    set(AVRO_PLATFORM_FLAGS -DDUMMY)
 endif()
 ExternalProject_Add(avro
     PREFIX ${CMAKE_BINARY_DIR}/avro
