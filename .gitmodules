@@ -2,10 +2,6 @@
 	path = opencpn-libs
 	url = https://github.com/OpenCPN/opencpn-libs.git
 	branch = main
-[submodule "libs/avro"]
-	path = libs/avro
-	url = https://github.com/apache/avro.git
-        branch = main
 [submodule "libs/zlib"]
 	path = libs/zlib
 	url = https://github.com/madler/zlib.git
