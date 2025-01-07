@@ -13,3 +13,6 @@
 [submodule "libs/liblzma"]
 	path = libs/liblzma
 	url = https://github.com/ImageMagick/lzma.git
+[submodule "libs/avro"]
+	path = libs/avro
+	url = https://github.com/KAHU-radar/avro.git
