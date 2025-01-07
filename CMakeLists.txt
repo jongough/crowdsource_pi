@@ -243,21 +243,6 @@ ExternalProject_Add(liblzma
         "${CMAKE_BINARY_DIR}/${LZMALIB}"
     BUILD_ALWAYS TRUE
 )
-if(WIN32)
-    # Hacks to get AVRO to compile on modern MS VS...
-    set(AVRO_PLATFORM_FLAGS
-        /D_MSC_STDINT_H_=1
-        /D_MSC_INTTYPES_H_=1
-        /DHAVE_STDINT_H=1
-        /DHAVE_INTTYPES_H=1
-        /Usnprintf
-        /Dssize_t=ptrdiff_t
-    )
-else()
-    set(AVRO_PLATFORM_FLAGS -DDUMMY=1)
-endif()
-string(JOIN " " AVRO_PLATFORM_FLAGS_STRING ${AVRO_PLATFORM_FLAGS})
-
 ExternalProject_Add(avro
     PREFIX ${CMAKE_BINARY_DIR}/avro
     SOURCE_DIR ${CMAKE_SOURCE_DIR}/libs/avro/lang/c
@@ -269,7 +254,6 @@ ExternalProject_Add(avro
         -DJANSSON_FOUND=True
         -DCMAKE_EXE_LINKER_FLAGS="-static"
         -DBUILD_SHARED_LIBS=OFF
-        -DCMAKE_C_FLAGS="${AVRO_PLATFORM_FLAGS_STRING}"
     INSTALL_COMMAND
         ${CMAKE_COMMAND} -E copy
             "${CMAKE_BINARY_DIR}/avro/src/avro-build/src${LIBDIR}/${LIBPREFIX}avro${LIBEXT}"
