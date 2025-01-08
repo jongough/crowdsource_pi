@@ -258,8 +258,8 @@ ExternalProject_Add(avro
         -DBUILD_SHARED_LIBS=OFF
     INSTALL_COMMAND
         ${CMAKE_COMMAND} -E copy
-            "${CMAKE_BINARY_DIR}/avro/src/avro-build/src${LIBDIR}/${LIBPREFIX}avro${LIBEXT}"
-            "${CMAKE_BINARY_DIR}/${LIBPREFIX}avro${LIBEXT}"
+            "${CMAKE_BINARY_DIR}/avro/src/avro-build/src${LIBDIR}/${AVROLIB}"
+            "${CMAKE_BINARY_DIR}/${AVROLIB}"
     BUILD_ALWAYS TRUE
 )
 include_directories("${CMAKE_SOURCE_DIR}/libs/avro/lang/c/src")
