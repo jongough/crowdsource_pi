@@ -68,6 +68,8 @@ workflows:
         - build-macos:
              <<: *std-filters
         - build-msvc-2022:
+            requires: # Avoid building in parallel and causing choco propblems
+              - build-msvc-wx32-2022
             <<: *std-filters
 
 orbs:
