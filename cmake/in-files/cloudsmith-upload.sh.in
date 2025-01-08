@@ -252,8 +252,8 @@ elif [ $LOCAL_BUILD = false ]; then
     # Allow upload for users with an email whos' domain matches the github org name
     username_domain=${CIRCLE_USERNAME#*@}
     username_domain=${username_domain%.*}
-    org_name_lower=$(echo "$CIRCLE_PROJECT_USERNAME" | sed 's/.*/\L&/')
-    username_domain_lower=$(echo "$username_domain" | sed 's/.*/\L&/')
+    org_name_lower=$(echo "$CIRCLE_PROJECT_USERNAME" | | tr '[:upper:]' '[:lower:]')
+    username_domain_lower=$(echo "$username_domain" | tr '[:upper:]' '[:lower:]')
     if [ "$org_name_lower" = "$username_domain_lower" ]; then
         cloudsmith push raw --republish --no-wait-for-sync \
             --name @PACKAGE_NAME@-@PACKAGE_VERSION@-@PKG_TARGET@-@COMPOUND_ARCH_DASH@@PKG_TARGET_WX_VER@@PKG_BUILD_GTK@-@PKG_TARGET_VERSION@-${OCPN_TARGET}-metadata \
