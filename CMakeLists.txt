@@ -245,6 +245,11 @@ ExternalProject_Add(liblzma
         "${CMAKE_BINARY_DIR}/${LZMALIB}"
     BUILD_ALWAYS TRUE
 )
+if(APPLE)
+    set(AVROFLAGS -DDUMMY=1)
+else()
+    set(AVROFLAGS -DCMAKE_EXE_LINKER_FLAGS="-static")
+endif()
 ExternalProject_Add(avro
     PREFIX ${CMAKE_BINARY_DIR}/avro
     SOURCE_DIR ${CMAKE_SOURCE_DIR}/libs/avro/lang/c
@@ -254,7 +259,7 @@ ExternalProject_Add(avro
         -DJANSSON_LIBRARIES=${CMAKE_BINARY_DIR}/${JANSSONLIB}
         -DJANSSON_INCLUDE_DIRS=${CMAKE_BINARY_DIR}/jansson/src/jansson-build/include/
         -DJANSSON_FOUND=True
-        -DCMAKE_EXE_LINKER_FLAGS="-static"
+        ${AVROFLAGS}
         -DBUILD_SHARED_LIBS=OFF
     INSTALL_COMMAND
         ${CMAKE_COMMAND} -E copy
