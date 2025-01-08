@@ -263,7 +263,7 @@ ExternalProject_Add(avro
     BUILD_ALWAYS TRUE
 )
 include_directories("${CMAKE_SOURCE_DIR}/libs/avro/lang/c/src")
-target_link_libraries(${PACKAGE_NAME} "${CMAKE_BINARY_DIR}/${LIBPREFIX}avro${LIBEXT}")
+target_link_libraries(${PACKAGE_NAME} "${CMAKE_BINARY_DIR}/${AVROLIB}")
 # Include dependencies of libarvro directly, or the linker will be to stupid to not leave dangling symbols pointing to them
 target_link_libraries(${PACKAGE_NAME} "${CMAKE_BINARY_DIR}/${JANSSONLIB}")
 target_link_libraries(${PACKAGE_NAME} "${CMAKE_BINARY_DIR}/${ZLIB}")
