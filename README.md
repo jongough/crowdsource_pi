@@ -25,6 +25,10 @@ Working features:
 * Reports connectivity status in the preferences dialog
 * Uses a basic authentication scheme using an API key
 
+## Download location
+
+Plugin files for various OSes can be downloaded from [Cloudsmith](https://cloudsmith.io/~kahu/repos/crowdsource_pi-beta/packages/).
+
 ## Installation instructions
  
 * Connect a laptop to the same ethernet segment as your radar. Follow the instructions here for any network setup: https://github.com/opencpn-radar-pi/radar_pi/wiki
