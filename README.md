@@ -27,7 +27,7 @@ Working features:
 
 ## Download location
 
-Plugin files for various OSes can be downloaded from [Cloudsmith](https://cloudsmith.io/~kahu/repos/crowdsource_pi-beta/packages/).
+Plugin files for various OSes can be downloaded from [Cloudsmith](https://cloudsmith.io/~kahu/repos/crowdsource_pi-beta).
 
 ## Installation instructions
  
