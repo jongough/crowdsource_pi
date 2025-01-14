@@ -64,9 +64,9 @@ set(LONG_DESCRIPTION
 
 set(VERSION_MAJOR "0")
 set(VERSION_MINOR "1")
-set(VERSION_PATCH "163")
+set(VERSION_PATCH "164")
 set(VERSION_TWEAK "0")
-set(VERSION_DATE "11/12/2024") # DD/MM/YYYY format
+set(VERSION_DATE "14/01/2025") # DD/MM/YYYY format
 set(OCPN_MIN_VERSION "ov58")
 
 set(OCPN_API_VERSION_MAJOR "1")
@@ -273,7 +273,7 @@ target_link_libraries(${PACKAGE_NAME} "${CMAKE_BINARY_DIR}/${AVROLIB}")
 target_link_libraries(${PACKAGE_NAME} "${CMAKE_BINARY_DIR}/${JANSSONLIB}")
 target_link_libraries(${PACKAGE_NAME} "${CMAKE_BINARY_DIR}/${ZLIB}")
 add_dependencies(${PACKAGE_NAME} avro)
-add_dependencies(avro zlib)
+#add_dependencies(avro zlib)
 add_dependencies(avro jansson)
 add_dependencies(avro liblzma)
 
