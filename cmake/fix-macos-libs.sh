@@ -6,6 +6,8 @@
 
 readonly RUNTIME_PATH="@executable_path/../Frameworks/"
 
+echo "Fixing maxos library paths in $(pwd)..."
+
 plugin=$(find . -maxdepth 1 -name '*.dylib')
 for lib in $(otool -L "$plugin" | awk ' /wx/ {print $1}'); do
     libdir=${lib%/*}
