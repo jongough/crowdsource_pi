@@ -64,8 +64,8 @@ set(LONG_DESCRIPTION
 
 set(VERSION_MAJOR "0")
 set(VERSION_MINOR "1")
-set(VERSION_PATCH "162")
-set(VERSION_TWEAK "1")
+set(VERSION_PATCH "164")
+set(VERSION_TWEAK "0")
 set(VERSION_DATE "14/01/2025") # DD/MM/YYYY format
 set(OCPN_MIN_VERSION "ov58")
 
@@ -218,7 +218,7 @@ endif()
 #        "${CMAKE_BINARY_DIR}/zlib/src/zlib-build${LIBDIR}/${ZLIB}"
 #        "${CMAKE_BINARY_DIR}/${ZLIB}"
 #    BUILD_ALWAYS TRUE
-)
+#)
 ExternalProject_Add(jansson
     PREFIX ${CMAKE_BINARY_DIR}/jansson
     SOURCE_DIR ${CMAKE_SOURCE_DIR}/libs/jansson
@@ -273,7 +273,7 @@ target_link_libraries(${PACKAGE_NAME} "${CMAKE_BINARY_DIR}/${AVROLIB}")
 target_link_libraries(${PACKAGE_NAME} "${CMAKE_BINARY_DIR}/${JANSSONLIB}")
 target_link_libraries(${PACKAGE_NAME} "${CMAKE_BINARY_DIR}/${ZLIB}")
 add_dependencies(${PACKAGE_NAME} avro)
-add_dependencies(avro zlib)
+#add_dependencies(avro zlib)
 add_dependencies(avro jansson)
 add_dependencies(avro liblzma)
 
