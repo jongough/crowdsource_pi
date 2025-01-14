@@ -20,7 +20,7 @@
 # - xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx,                                       *
 # - xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx                                       *
 # -----------------------------------------------------------------------------
-# Frontend2 Author: Jon Gough Crowdsource(TP) v1.0.323.0 13/01/2025 DD/MM/YYYY
+# Frontend2 Author: Jon Gough Crowdsource(TP) v1.0.314.0 24/10/2024 DD/MM/YYYY
 # format buildCI:yes useODAPI:yes validateJSON:yes
 # ---------------------------------------------------------------------------
 # -- When changing this file do NOT change the order of the sections.    -- ##
@@ -64,9 +64,9 @@ set(LONG_DESCRIPTION
 
 set(VERSION_MAJOR "0")
 set(VERSION_MINOR "1")
-set(VERSION_PATCH "162")
-set(VERSION_TWEAK "1")
-set(VERSION_DATE "14/01/2025") # DD/MM/YYYY format
+set(VERSION_PATCH "163")
+set(VERSION_TWEAK "0")
+set(VERSION_DATE "11/12/2024") # DD/MM/YYYY format
 set(OCPN_MIN_VERSION "ov58")
 
 set(OCPN_API_VERSION_MAJOR "1")
@@ -90,8 +90,8 @@ set(CLOUDSMITH_BASE_REPOSITORY "crowdsource") # without the pi
 
 # Set the following to use OpenCPN cloudsmith repositories instead of own
 # repositories
-#set(CLOUDSMITH_USER "egil-moller")
-set(CLOUDSMITH_USER "jon-gough")
+set(CLOUDSMITH_USER "egil-moller")
+# set(CLOUDSMITH_USER "jon-gough")
 
 set(XML_INFO_URL
     "https://opencpn.org/wiki/dokuwiki/doku.php?id=opencpn:opencpn_user_manual:plugins:safety:odraw1.6_pi"
@@ -206,18 +206,18 @@ else()
     set(AVROLIB "libavro.a")
 endif()
 
-#ExternalProject_Add(zlib
-#    PREFIX ${CMAKE_BINARY_DIR}/zlib
-#    SOURCE_DIR ${CMAKE_SOURCE_DIR}/libs/zlib
-#    CMAKE_ARGS
-#        -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-#        -DCMAKE_CXX_FLAGS="-fPIC"
-#        -DCMAKE_C_FLAGS="-fPIC"
-#        -DBUILD_SHARED_LIBS=OFF
-#    INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
-#        "${CMAKE_BINARY_DIR}/zlib/src/zlib-build${LIBDIR}/${ZLIB}"
-#        "${CMAKE_BINARY_DIR}/${ZLIB}"
-#    BUILD_ALWAYS TRUE
+ExternalProject_Add(zlib
+    PREFIX ${CMAKE_BINARY_DIR}/zlib
+    SOURCE_DIR ${CMAKE_SOURCE_DIR}/libs/zlib
+    CMAKE_ARGS
+        -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+        -DCMAKE_CXX_FLAGS="-fPIC"
+        -DCMAKE_C_FLAGS="-fPIC"
+        -DBUILD_SHARED_LIBS=OFF
+    INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
+        "${CMAKE_BINARY_DIR}/zlib/src/zlib-build${LIBDIR}/${ZLIB}"
+        "${CMAKE_BINARY_DIR}/${ZLIB}"
+    BUILD_ALWAYS TRUE
 )
 ExternalProject_Add(jansson
     PREFIX ${CMAKE_BINARY_DIR}/jansson
