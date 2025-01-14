@@ -206,20 +206,19 @@ else()
     set(AVROLIB "libavro.a")
 endif()
 
-#ExternalProject_Add(zlib
-#    PREFIX ${CMAKE_BINARY_DIR}/zlib
-#    SOURCE_DIR ${CMAKE_SOURCE_DIR}/libs/zlib
-#    CMAKE_ARGS
-#        -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-#        -DCMAKE_CXX_FLAGS="-fPIC"
-#        -DCMAKE_C_FLAGS="-fPIC"
-#        -DBUILD_SHARED_LIBS=OFF
-#    INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
-#        "${CMAKE_BINARY_DIR}/zlib/src/zlib-build${LIBDIR}/${ZLIB}"
-#        "${CMAKE_BINARY_DIR}/${ZLIB}"
-#    BUILD_ALWAYS TRUE
-#)
-
+ExternalProject_Add(zlib
+    PREFIX ${CMAKE_BINARY_DIR}/zlib
+    SOURCE_DIR ${CMAKE_SOURCE_DIR}/libs/zlib
+    CMAKE_ARGS
+        -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+        -DCMAKE_CXX_FLAGS="-fPIC"
+        -DCMAKE_C_FLAGS="-fPIC"
+        -DBUILD_SHARED_LIBS=OFF
+    INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
+        "${CMAKE_BINARY_DIR}/zlib/src/zlib-build${LIBDIR}/${ZLIB}"
+        "${CMAKE_BINARY_DIR}/${ZLIB}"
+    BUILD_ALWAYS TRUE
+)
 ExternalProject_Add(jansson
     PREFIX ${CMAKE_BINARY_DIR}/jansson
     SOURCE_DIR ${CMAKE_SOURCE_DIR}/libs/jansson
@@ -274,7 +273,7 @@ target_link_libraries(${PACKAGE_NAME} "${CMAKE_BINARY_DIR}/${AVROLIB}")
 target_link_libraries(${PACKAGE_NAME} "${CMAKE_BINARY_DIR}/${JANSSONLIB}")
 target_link_libraries(${PACKAGE_NAME} "${CMAKE_BINARY_DIR}/${ZLIB}")
 add_dependencies(${PACKAGE_NAME} avro)
-#add_dependencies(avro zlib)
+add_dependencies(avro zlib)
 add_dependencies(avro jansson)
 add_dependencies(avro liblzma)
 
